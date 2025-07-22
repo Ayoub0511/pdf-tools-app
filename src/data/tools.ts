@@ -1,22 +1,40 @@
+import React from 'react'; // Muhim: Khassak t'importi React bach tstakhdem 'React.ComponentType'
+
+// Define a type (interface) for a Tool object
+
+interface Tool {
+  name: string;
+  slug: string;
+  description: string;
+  component?: React.ComponentType<any>; 
+}
+
+
 import CompressPDFPage from '@/app/tools/compress-pdf/page';
-const tools = [
+
+// import MergePDFPage from '@/app/tools/merge-pdf/page';
+// import SplitPDFPage from '@/app/tools/split-pdf/page';
+// import ConvertToPDFPage from '@/app/tools/convert-to-pdf/page';
+
+
+const tools: Tool[] = [ 
   {
     name: 'Merge PDF',
     slug: 'merge-pdf',
     description: 'Combine multiple PDF files into one.',
-    // component: MergePDFPage,
+    // component: MergePDFPage, 
   },
   {
     name: 'Split PDF',
     slug: 'split-pdf',
     description: 'Split a PDF file into individual pages.',
-    // component: SplitPDFPage,
-  }, 
+    // component: SplitPDFPage, 
+  },
   {
     name: 'Compress PDF',
     slug: 'compress-pdf',
     description: 'Reduce the file size of your PDF.',
-    component: CompressPDFPage, 
+    component: CompressPDFPage,
   },
   {
     name: 'Convert to PDF',

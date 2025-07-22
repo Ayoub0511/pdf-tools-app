@@ -7,7 +7,7 @@ export async function generateStaticParams() {
   }));
 }
 
-export default async function ToolPage({ params }: { params: { slug: string } }) { // async hna
+export default async function ToolPage({ params }: { params: { slug: string } }) {
   const tool = tools.find((t) => t.slug === params.slug);
 
   if (!tool) {

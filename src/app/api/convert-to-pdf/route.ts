@@ -59,7 +59,6 @@ export async function POST(req: Request) {
       try {
         const result = await mammoth.convertToHtml({ buffer: buffer });
         htmlContent = result.value; // The generated HTML
-        // You might want to wrap the HTML in basic head/body tags for better PDF formatting
         htmlContent = `
           <html>
             <head>
@@ -68,7 +67,6 @@ export async function POST(req: Request) {
                 body { font-family: Arial, sans-serif; line-height: 1.6; margin: 20mm; }
                 p { margin-bottom: 1em; }
                 h1, h2, h3, h4, h5, h6 { margin-top: 1em; margin-bottom: 0.5em; }
-                /* Basic styling for images, tables from DOCX conversion */
                 img { max-width: 100%; height: auto; }
                 table { border-collapse: collapse; width: 100%; }
                 th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
@@ -89,10 +87,7 @@ export async function POST(req: Request) {
         }
         return NextResponse.json({ error: "Unknown DOCX conversion error." }, { status: 500 });
       }
-
-    }
-    // Add more else if blocks for .xlsx, etc., using appropriate libraries
-    else {
+    } else {
       htmlContent = `
         <html>
           <head>

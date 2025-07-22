@@ -5,7 +5,7 @@ export default function ToolPage({ params }: { params: { slug: string } }) {
   const tool = tools.find((t) => t.slug === params.slug);
 
   if (!tool) {
-    notFound();
+    return notFound(); // رجع القيمة ديال notFound() باش يتوقف rendering
   }
 
   return (

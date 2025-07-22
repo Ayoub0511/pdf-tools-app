@@ -12,7 +12,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
     }
 
-    let htmlContent: string;
+    let htmlContent: string | undefined;
     let filename = file.name;
 
     // --- Handling different file types ---
@@ -82,9 +82,12 @@ export async function POST(req: Request) {
         `;
         filename = filename.replace(/\.docx$/, '.pdf');
         console.log("DOCX converted to HTML successfully.");
-      } catch (mammothError: any) {
-        console.error("❌ Mammoth DOCX Conversion Error:", mammothError);
-        return NextResponse.json({ error: "Failed to convert DOCX to HTML: " + mammothError.message }, { status: 500 });
+      } catch (mammothError: unknown) {
+        if (mammothError instanceof Error) {
+          console.error("❌ Mammoth DOCX Conversion Error:", mammothError.message);
+          return NextResponse.json({ error: "Failed to convert DOCX to HTML: " + mammothError.message }, { status: 500 });
+        }
+        return NextResponse.json({ error: "Unknown DOCX conversion error." }, { status: 500 });
       }
 
     }
@@ -147,8 +150,11 @@ export async function POST(req: Request) {
       },
     });
 
-  } catch (error: any) {
-    console.error("❌ PDF Conversion Error:", error);
-    return NextResponse.json({ error: "Failed to convert file to PDF: " + error.message }, { status: 500 });
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error("❌ PDF Conversion Error:", error.message);
+      return NextResponse.json({ error: "Failed to convert file to PDF: " + error.message }, { status: 500 });
+    }
+    return NextResponse.json({ error: "Unknown error occurred." }, { status: 500 });
   }
 }

@@ -1,14 +1,13 @@
-import React from 'react'; // Muhim: Khassak t'importi React bach tstakhdem 'React.ComponentType'
 
-// Define a type (interface) for a Tool object
+import React from 'react';
 
-interface Tool {
+
+export interface Tool { 
   name: string;
   slug: string;
   description: string;
-  component?: React.ComponentType<any>; 
+  component?: React.ComponentType<any>;
 }
-
 
 import CompressPDFPage from '@/app/tools/compress-pdf/page';
 
@@ -17,18 +16,18 @@ import CompressPDFPage from '@/app/tools/compress-pdf/page';
 // import ConvertToPDFPage from '@/app/tools/convert-to-pdf/page';
 
 
-const tools: Tool[] = [ 
+const tools: Tool[] = [
   {
     name: 'Merge PDF',
     slug: 'merge-pdf',
     description: 'Combine multiple PDF files into one.',
-    // component: MergePDFPage, 
+    // component: MergePDFPage,
   },
   {
     name: 'Split PDF',
     slug: 'split-pdf',
     description: 'Split a PDF file into individual pages.',
-    // component: SplitPDFPage, 
+    // component: SplitPDFPage,
   },
   {
     name: 'Compress PDF',

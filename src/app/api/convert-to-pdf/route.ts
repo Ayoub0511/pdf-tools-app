@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import puppeteer from 'puppeteer';
-import { Readable } from 'stream';
+import { Readable } from 'stream'; // Node.js Readable stream
 import mammoth from 'mammoth'; // Import mammoth.js
 
 export async function POST(req: Request) {
@@ -44,7 +44,8 @@ export async function POST(req: Request) {
       stream.push(buffer);
       stream.push(null);
 
-      return new NextResponse(stream as any, {
+      // FIX: Removed 'as any' here
+      return new NextResponse(stream, {
         headers: {
           'Content-Type': 'application/pdf',
           'Content-Disposition': `attachment; filename="${filename}"`,
@@ -138,7 +139,8 @@ export async function POST(req: Request) {
     stream.push(pdfBuffer);
     stream.push(null);
 
-    return new NextResponse(stream as any, {
+    // FIX: Removed 'as any' here
+    return new NextResponse(stream, {
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `attachment; filename="${filename}"`,

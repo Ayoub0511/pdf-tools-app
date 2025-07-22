@@ -3,6 +3,25 @@ import puppeteer from 'puppeteer';
 import { Readable } from 'stream'; // Node.js Readable stream
 import mammoth from 'mammoth'; // Import mammoth.js
 
+function toWebReadableStream(nodeReadable: Readable): ReadableStream<Uint8Array> {
+  return new ReadableStream({
+    start(controller) {
+      nodeReadable.on('data', (chunk: Buffer) => {
+        controller.enqueue(new Uint8Array(chunk));
+      });
+      nodeReadable.on('end', () => {
+        controller.close();
+      });
+      nodeReadable.on('error', (err) => {
+        controller.error(err);
+      });
+    },
+    cancel() {
+      nodeReadable.destroy();
+    }
+  });
+}
+
 export async function POST(req: Request) {
   try {
     const formData = await req.formData();
@@ -15,7 +34,6 @@ export async function POST(req: Request) {
     let htmlContent: string | undefined;
     let filename = file.name;
 
-    // --- Handling different file types ---
     if (file.type === 'text/html') {
       htmlContent = await file.text();
       filename = filename.replace(/\.html$/, '.pdf');
@@ -39,13 +57,15 @@ export async function POST(req: Request) {
       `;
       filename = filename.replace(/\.(jpeg|jpg|png|gif)$/, '.pdf');
     } else if (file.type === 'application/pdf') {
+      // Had l'partie kat handle ila kan l'fichier deja PDF
       const buffer = Buffer.from(await file.arrayBuffer());
-      const stream = new Readable();
-      stream.push(buffer);
-      stream.push(null);
+      const nodeReadableStream = new Readable();
+      nodeReadableStream.push(buffer);
+      nodeReadableStream.push(null); // Signal end of stream
 
-      // FIX: Removed 'as any' here
-      return new NextResponse(stream, {
+      const webReadableStream = toWebReadableStream(nodeReadableStream);
+
+      return new NextResponse(webReadableStream, {
         headers: {
           'Content-Type': 'application/pdf',
           'Content-Disposition': `attachment; filename="${filename}"`,
@@ -135,12 +155,14 @@ export async function POST(req: Request) {
     await browser.close();
     console.log("PDF generation complete. Streaming to client.");
 
-    const stream = new Readable();
-    stream.push(pdfBuffer);
-    stream.push(null);
+    const nodeReadablePdfStream = new Readable();
+    nodeReadablePdfStream.push(pdfBuffer);
+    nodeReadablePdfStream.push(null); // Signal end of stream
 
-    // FIX: Removed 'as any' here
-    return new NextResponse(stream, {
+    
+    const webReadablePdfStream = toWebReadableStream(nodeReadablePdfStream);
+
+    return new NextResponse(webReadablePdfStream, { // Kansta3mlo Web ReadableStream hna
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `attachment; filename="${filename}"`,

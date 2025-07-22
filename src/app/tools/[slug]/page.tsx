@@ -1,11 +1,17 @@
 import { notFound } from 'next/navigation';
 import tools from '@/data/tools';
 
-export default function ToolPage({ params }: { params: { slug: string } }) {
+export async function generateStaticParams() {
+  return tools.map((tool) => ({
+    slug: tool.slug,
+  }));
+}
+
+export default async function ToolPage({ params }: { params: { slug: string } }) { // async hna
   const tool = tools.find((t) => t.slug === params.slug);
 
   if (!tool) {
-    return notFound(); // رجع القيمة ديال notFound() باش يتوقف rendering
+    return notFound();
   }
 
   return (

@@ -41,7 +41,7 @@ export default function ConvertToPDFPage() {
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       setConvertedFileUrl(url);
-    } catch (err) {
+    } catch {
       setError('Conversion failed. Please try again.');
     } finally {
       setIsConverting(false);

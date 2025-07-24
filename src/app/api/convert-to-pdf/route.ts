@@ -4,6 +4,36 @@ import { Readable } from 'stream';
 import mammoth from 'mammoth';
 import fetch from 'node-fetch'; // Using node-fetch for server-side fetches
 
+// Define interfaces for CloudConvert API response to help TypeScript
+interface CloudConvertTaskResultForm {
+  url: string;
+  parameters: Record<string, string>;
+}
+
+interface CloudConvertTaskResult {
+  form?: CloudConvertTaskResultForm;
+  files?: Array<{ url: string; filename: string; }>;
+}
+
+interface CloudConvertTask {
+  id: string;
+  operation: string;
+  status: string;
+  result?: CloudConvertTaskResult;
+  code?: string; // For error codes
+}
+
+interface CloudConvertJobData {
+  id: string;
+  status: string;
+  tasks: CloudConvertTask[];
+}
+
+interface CloudConvertApiResponse {
+  data: CloudConvertJobData;
+}
+
+
 // Function to convert Node.js Readable stream to Web ReadableStream
 function toWebReadableStream(nodeReadable: Readable): ReadableStream<Uint8Array> {
   return new ReadableStream({
@@ -104,7 +134,7 @@ export async function POST(req: Request) {
       console.log(`Attempting to convert Excel file: ${file.name} using CloudConvert`);
 
       // YOUR CLOUDCONVERT API KEY HERE
-      const CLOUDCONVERT_API_KEY = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIxIiwianRpIjoiOTYxNDc5NTY5YWViZWU2YTg4Y2ExNzk3NjAzMzdmN2I3NjcwOWFlYWJhZDUwZjhjZDRiYmUyN2RlNTNiYjg5M2ZhN2ZjZTI4MTg5YmY1ODciLCJpYXQiOjE3NTMzOTc1NzIuODU1ODk5LCJuYmYiOjE3NTMzOTc1NzIuODU1OTAxLCJleHAiOjQ5MDkwNzExNzIuODUxNTgsInN1YiI6IjcyNDc0MTIxIiwic2NvcGVzIjpbInRhc2sud3JpdGUiLCJ1c2VyLnJlYWQiXX0.Yx0MsozfELAZozDC5oTDRNGRbBID5obPx2U8N1xKc6xzpkboksQ2pXQDK2lCSNLg7AaM0IeMqVWh2QUKHVcbDXkAmNYnGB3zoYwtqCLP4-wlnoWZ40R9sAR1M3CmU_nKkjGbp-yifRVeo7cW-nTT5K_a-3uTUzbFE0jKR8WdkUJZLDrOXD23nrz7otEPzw0kPuDzd9-A55k51HANlgLtMFlP6fvxZPNV8eadPfJHyR7fQeTZw7Dpvl-S6l_ueVhwkaNdRxMtqKS3PEO-bCAa0e1TVnWo4g4_VAy8r2lTVQwFfiMOWBLP9QuzzO7Ovph_ciwsY_-MQm7JCoLKWZAcN-FWcArPsaGBFzhluttxx8ylZiRaXjM7O4S__PDWzozccamwuSYvswthTya1JkKvD5aGMkZL-FXJMDV6ivYFsXbyQjukwnjjEGbkKZTys6zr_ISe4SFIdPTLfWjtUIJO2HNs-n0nycFffzxGVI4oYjIkYOsL1oVs2N0MPxd9s1S3ELJiWSlHN3qPUO6lu_aWtP1i6-tx7qOQ89KmCAQeFh_902-vCFZX-UaKmUI8QmBP2Kt9Mn8y6R5NHnxePmNrjQA7VFk3qgvNHE_ejkMUZKjmKQjDNu6ltZ1mbQ18akAsR5qUvqMsHQz3S4axhKfO8VKc8NbPGMom5T3EgjDSgdY';
+      const CLOUDCONVERT_API_KEY = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIxIiwianRpIjoiOTYxNDc5NTY5YWViZWU2YTg4Y2ExNzk3NjAzMzdmN2I3NjcwOWFlYWJhZDUwZjhjZDRiYmUyN2RlNTNiYjg5M2ZhN2ZjZTI4MTg5YmY1ODciLCJpYXQiOjE3NTMzOTc1NzIuODU1ODk5LCJuYmYiOjE3NTMzOTc1NzIuODU1OTAxLCJleHAiOjQ5MDkwNzExNzIuODUxNTgsInN1YiI6IjcyNDc0MTIxIiwic2NvcGVzIjpbInRhc2sud3JpdGUiLCJ1c2VyLnJlYWQiXX0.Yx0MsozfELAZozDC5oTDRNGRbBID5obPx2U8N1xKc6xzpkboksQ2pXQDK2lCSNLg7AaM0IeMqVWh2QUKHVcbDXkAmNYnGB3zoYwtqCLP4-wlnoWZ40R9sAR1M3CmU_nKkjGbp-yifRVeo7cW-nTT5K_a-3uTUzbFE0jKR8WdkUJZLDrOXD23nrz7otEPzw0kPuDzd9-A55k51HANlgLtMFlP6fvxZPNV8eadPfJHyR7fQeTZw7Dpvl-S6l_ueVhwkaNdRxMtqKS3PEO-bCAa0e1TVnWo4g4_VAy8r2lTVQwFfiMOWBLP9QuzzO7Ovph_ciwsY_-MQm7JCoLKWZAcN-FWcArPsaGBFzhluttxx8ylZiRaXjM7O4S__PDWzozccamwuSYvswthTya1JkKvD5aGMkZL-FXJMDV6ivYFsXbyQjukwnjjEGbkKZTys6zr_ISe4SFIdPTLfWjtUIJO2HNs-n0nycFffzxGVI4oYjIkYOsL1oVs2N0MPxd9s1S3ELJiWSlHN3qPUO6lu_aWtP1i6-tx7qOQ89KmCAQeFh_902-vCFZX-UaKmUI8QmBP2Kt9Mn8y6R5NHnxePmNrjQA7VFk3qgvNHE_ejkMUZKjmKQjDNu6ltZ1mbQ18akAsR5qUvqMsHQz3S4axhKfO8VKc8NbPGMom5T3EgjDSgdY'; 
 
       try {
         // Step 1: Upload file to CloudConvert
@@ -142,10 +172,16 @@ export async function POST(req: Request) {
           throw new Error(`CloudConvert job creation failed: ${uploadRes.status} - ${errorText}`);
         }
 
-        const jobData = await uploadRes.json();
+        // Cast jobData to the defined type
+        const jobData: CloudConvertApiResponse = await uploadRes.json() as CloudConvertApiResponse;
         const jobId = jobData.data.id;
-        const uploadUrl = jobData.data.tasks[0].result.form.url;
-        const uploadFields = jobData.data.tasks[0].result.form.parameters;
+        const uploadTask = jobData.data.tasks.find(task => task.operation === 'import/upload');
+        
+        if (!uploadTask || !uploadTask.result || !uploadTask.result.form) {
+            throw new Error("CloudConvert upload task details not found.");
+        }
+        const uploadUrl = uploadTask.result.form.url;
+        const uploadFields = uploadTask.result.form.parameters;
 
         // Upload the file itself
         const fileUploadFormData = new FormData();
@@ -179,7 +215,7 @@ export async function POST(req: Request) {
               'Authorization': `Bearer ${CLOUDCONVERT_API_KEY}`
             }
           });
-          const statusData = await statusRes.json();
+          const statusData: CloudConvertApiResponse = await statusRes.json() as CloudConvertApiResponse;
           jobStatus = statusData.data.status;
           console.log(`CloudConvert Job Status: ${jobStatus}`);
 

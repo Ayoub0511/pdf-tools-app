@@ -2,9 +2,10 @@ import { NextResponse } from 'next/server';
 import puppeteer from 'puppeteer';
 import { Readable } from 'stream';
 import mammoth from 'mammoth';
-import fetch from 'node-fetch'; // Using node-fetch for server-side fetches
+import axios from 'axios'; // Using axios for server-side HTTP requests, more common for APIs
 
-// Define interfaces for CloudConvert API response to help TypeScript
+// Define interfaces for CloudConvert API response (still needed for other parts if not removed)
+// If you decide to completely remove CloudConvert, you can remove these interfaces.
 interface CloudConvertTaskResultForm {
   url: string;
   parameters: Record<string, string>;
@@ -130,126 +131,80 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "Unknown DOCX conversion error." }, { status: 500 });
       }
     } else if (file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' || file.type === 'application/vnd.ms-excel') {
-      // Handle XLSX (Excel) files using an external API (CloudConvert example)
-      console.log(`Attempting to convert Excel file: ${file.name} using CloudConvert`);
+      // Handle XLSX (Excel) files using Aspose.Cells Cloud API
+      console.log(`Attempting to convert Excel file: ${file.name} using Aspose.Cells Cloud`);
 
-      // YOUR CLOUDCONVERT API KEY HERE
-      const CLOUDCONVERT_API_KEY = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIxIiwianRpIjoiOTYxNDc5NTY5YWViZWU2YTg4Y2ExNzk3NjAzMzdmN2I3NjcwOWFlYWJhZDUwZjhjZDRiYmUyN2RlNTNiYjg5M2ZhN2ZjZTI4MTg5YmY1ODciLCJpYXQiOjE3NTMzOTc1NzIuODU1ODk5LCJuYmYiOjE3NTMzOTc1NzIuODU1OTAxLCJleHAiOjQ5MDkwNzExNzIuODUxNTgsInN1YiI6IjcyNDc0MTIxIiwic2NvcGVzIjpbInRhc2sud3JpdGUiLCJ1c2VyLnJlYWQiXX0.Yx0MsozfELAZozDC5oTDRNGRbBID5obPx2U8N1xKc6xzpkboksQ2pXQDK2lCSNLg7AaM0IeMqVWh2QUKHVcbDXkAmNYnGB3zoYwtqCLP4-wlnoWZ40R9sAR1M3CmU_nKkjGbp-yifRVeo7cW-nTT5K_a-3uTUzbFE0jKR8WdkUJZLDrOXD23nrz7otEPzw0kPuDzd9-A55k51HANlgLtMFlP6fvxZPNV8eadPfJHyR7fQeTZw7Dpvl-S6l_ueVhwkaNdRxMtqKS3PEO-bCAa0e1TVnWo4g4_VAy8r2lTVQwFfiMOWBLP9QuzzO7Ovph_ciwsY_-MQm7JCoLKWZAcN-FWcArPsaGBFzhluttxx8ylZiRaXjM7O4S__PDWzozccamwuSYvswthTya1JkKvD5aGMkZL-FXJMDV6ivYFsXbyQjukwnjjEGbkKZTys6zr_ISe4SFIdPTLfWjtUIJO2HNs-n0nycFffzxGVI4oYjIkYOsL1oVs2N0MPxd9s1S3ELJiWSlHN3qPUO6lu_aWtP1i6-tx7qOQ89KmCAQeFh_902-vCFZX-UaKmUI8QmBP2Kt9Mn8y6R5NHnxePmNrjQA7VFk3qgvNHE_ejkMUZKjmKQjDNu6ltZ1mbQ18akAsR5qUvqMsHQz3S4axhKfO8VKc8NbPGMom5T3EgjDSgdY'; 
+      // YOUR ASPOSE API CREDENTIALS HERE
+      // Ensure these are your actual Client ID and Client Secret from Aspose Cloud Dashboard
+      const ASPOSE_CLIENT_ID = '52aba14d-2168-4408-95b5-c13066ef64cd';
+      const ASPOSE_CLIENT_SECRET = '209bff3d24db90658fe223e5992b5d82';
+
+      // No need for an explicit check here, Aspose API will return 401 if credentials are wrong.
+      // If you want to add a check for empty strings:
+      if (!ASPOSE_CLIENT_ID || !ASPOSE_CLIENT_SECRET) {
+        console.error("Aspose API credentials are not set. Please ensure Client ID and Client Secret are provided.");
+        return NextResponse.json({ error: "Aspose API credentials are not configured." }, { status: 500 });
+      }
 
       try {
-        // Step 1: Upload file to CloudConvert
-        const uploadFormData = new FormData();
-        uploadFormData.append('file', file);
-
-        const uploadRes = await fetch('https://api.cloudconvert.com/v2/jobs', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${CLOUDCONVERT_API_KEY}`,
-            'Content-Type': 'application/json', // This header is important for the jobs endpoint
-          },
-          body: JSON.stringify({
-            "tasks": {
-              "upload": {
-                "operation": "import/upload"
-              },
-              "convert": {
-                "operation": "convert",
-                "input": "upload",
-                "output_format": "pdf",
-                "filename": filename.replace(/\.xlsx?$/, '.pdf')
-              },
-              "export": {
-                "operation": "export/url",
-                "input": "convert"
-              }
-            }
-          })
-        });
-
-        if (!uploadRes.ok) {
-          const errorText = await uploadRes.text();
-          console.error("CloudConvert Job Creation Failed:", uploadRes.status, errorText);
-          throw new Error(`CloudConvert job creation failed: ${uploadRes.status} - ${errorText}`);
-        }
-
-        // Cast jobData to the defined type
-        const jobData: CloudConvertApiResponse = await uploadRes.json() as CloudConvertApiResponse;
-        const jobId = jobData.data.id;
-        const uploadTask = jobData.data.tasks.find(task => task.operation === 'import/upload');
-        
-        if (!uploadTask || !uploadTask.result || !uploadTask.result.form) {
-            throw new Error("CloudConvert upload task details not found.");
-        }
-        const uploadUrl = uploadTask.result.form.url;
-        const uploadFields = uploadTask.result.form.parameters;
-
-        // Upload the file itself
-        const fileUploadFormData = new FormData();
-        for (const key in uploadFields) {
-          fileUploadFormData.append(key, uploadFields[key]);
-        }
-        fileUploadFormData.append('file', file);
-
-        const directUploadRes = await fetch(uploadUrl, {
-          method: 'POST',
-          body: fileUploadFormData,
-        });
-
-        if (!directUploadRes.ok) {
-          const errorText = await directUploadRes.text();
-          console.error("CloudConvert File Upload Failed:", directUploadRes.status, errorText);
-          throw new Error(`CloudConvert file upload failed: ${directUploadRes.status} - ${errorText}`);
-        }
-        console.log("File uploaded to CloudConvert successfully.");
-
-        // Step 2: Poll for job completion
-        let jobStatus = jobData.data.status;
-        let exportUrl: string | undefined;
-        let retries = 0;
-        const MAX_RETRIES = 30; // Max 30 retries, ~5 minutes with 10s delay
-
-        while (jobStatus !== 'finished' && jobStatus !== 'error' && retries < MAX_RETRIES) {
-          await new Promise(resolve => setTimeout(resolve, 10000)); // Wait 10 seconds
-          const statusRes = await fetch(`https://api.cloudconvert.com/v2/jobs/${jobId}`, {
+        // Step 1: Get Access Token from Aspose
+        const tokenRes = await axios.post(
+          'https://api.aspose.cloud/connect/token',
+          new URLSearchParams({
+            grant_type: 'client_credentials',
+            client_id: ASPOSE_CLIENT_ID,
+            client_secret: ASPOSE_CLIENT_SECRET,
+          }).toString(),
+          {
             headers: {
-              'Authorization': `Bearer ${CLOUDCONVERT_API_KEY}`
-            }
-          });
-          const statusData: CloudConvertApiResponse = await statusRes.json() as CloudConvertApiResponse;
-          jobStatus = statusData.data.status;
-          console.log(`CloudConvert Job Status: ${jobStatus}`);
-
-          if (jobStatus === 'finished') {
-            const exportTask = statusData.data.tasks.find((task: any) => task.operation === 'export/url');
-            if (exportTask && exportTask.result && exportTask.result.files && exportTask.result.files.length > 0) {
-              exportUrl = exportTask.result.files[0].url;
-            } else {
-              throw new Error("CloudConvert export URL not found.");
-            }
-          } else if (jobStatus === 'error') {
-            const errorDetails = statusData.data.tasks.find((task: any) => task.status === 'error')?.code || 'Unknown error';
-            throw new Error(`CloudConvert conversion failed: ${errorDetails}`);
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
           }
-          retries++;
+        );
+        const accessToken = tokenRes.data.access_token;
+        console.log("Aspose Access Token obtained.");
+
+        // Step 2: Upload file to Aspose Storage (or convert directly if API supports it)
+        // For simplicity, we'll use a direct conversion endpoint if available,
+        // otherwise, we'd need to upload to Aspose Cloud Storage first.
+        // Aspose.Cells Cloud has a direct convert endpoint for stream/file.
+        
+        const excelBuffer = Buffer.from(await file.arrayBuffer());
+
+        const convertRes = await axios.put(
+          `https://api.aspose.cloud/v3.0/cells/convert?format=pdf`,
+          excelBuffer,
+          {
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+              'Content-Type': file.type, // Use original file type for upload
+              'Accept': 'application/pdf',
+            },
+            responseType: 'arraybuffer', // Get response as a buffer
+          }
+        );
+
+        if (convertRes.status !== 200) {
+          const errorText = convertRes.data ? Buffer.from(convertRes.data).toString('utf8') : 'Unknown error';
+          console.error("Aspose.Cells Conversion Failed:", convertRes.status, errorText);
+          throw new Error(`Aspose.Cells conversion failed: ${convertRes.status} - ${errorText}`);
         }
 
-        if (!exportUrl) {
-          throw new Error("CloudConvert job did not finish or export URL not found within timeout.");
-        }
-
-        // Step 3: Download the converted PDF
-        const pdfRes = await fetch(exportUrl);
-        if (!pdfRes.ok) {
-          throw new Error(`Failed to download converted PDF from CloudConvert: ${pdfRes.status}`);
-        }
-        pdfBuffer = Buffer.from(await pdfRes.arrayBuffer());
+        pdfBuffer = Buffer.from(convertRes.data);
         filename = filename.replace(/\.xlsx?$/, '.pdf'); // Ensure .pdf extension
-        console.log("Excel converted to PDF successfully via CloudConvert.");
+        console.log("Excel converted to PDF successfully via Aspose.Cells Cloud.");
 
-      } catch (cloudConvertError: unknown) {
-        if (cloudConvertError instanceof Error) {
-          console.error("❌ CloudConvert Conversion Error:", cloudConvertError.message);
-          return NextResponse.json({ error: "Failed to convert Excel to PDF via CloudConvert: " + cloudConvertError.message }, { status: 500 });
+      } catch (asposeError: unknown) {
+        if (axios.isAxiosError(asposeError)) {
+          console.error("❌ Aspose.Cells Conversion Error (Axios):", asposeError.message);
+          if (asposeError.response) {
+            console.error("Aspose Response Status:", asposeError.response.status);
+            console.error("Aspose Response Data:", asposeError.response.data ? Buffer.from(asposeError.response.data).toString('utf8') : 'No data');
+          }
+          return NextResponse.json({ error: "Failed to convert Excel to PDF via Aspose.Cells: " + (asposeError.response?.data ? Buffer.from(asposeError.response.data).toString('utf8') : asposeError.message) }, { status: 500 });
+        } else if (asposeError instanceof Error) {
+          console.error("❌ Aspose.Cells Conversion Error:", asposeError.message);
+          return NextResponse.json({ error: "Failed to convert Excel to PDF via Aspose.Cells: " + asposeError.message }, { status: 500 });
         }
         return NextResponse.json({ error: "Unknown Excel conversion error." }, { status: 500 });
       }
@@ -266,7 +221,7 @@ export async function POST(req: Request) {
           </head>
           <body>
             <h1>Unsupported File Type: ${filename}</h1>
-            <p>This converter currently supports HTML, images, DOCX, XLSX (via CloudConvert), and direct PDF upload. For other types, dedicated parsing is required.</p>
+            <p>This converter currently supports HTML, images, DOCX, XLSX (via Aspose.Cells Cloud), and direct PDF upload. For other types, dedicated parsing is required.</p>
             <p>Original file type: ${file.type}</p>
           </body>
         </html>
@@ -274,7 +229,7 @@ export async function POST(req: Request) {
       filename = filename + '.pdf';
     }
 
-    // If pdfBuffer is already set (e.g., for direct PDF upload or CloudConvert), use it
+    // If pdfBuffer is already set (e.g., for direct PDF upload or Aspose conversion), use it
     if (pdfBuffer) {
       const nodeReadablePdfStream = new Readable();
       nodeReadablePdfStream.push(pdfBuffer);

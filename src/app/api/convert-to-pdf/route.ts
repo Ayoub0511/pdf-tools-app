@@ -247,12 +247,11 @@ export async function POST(req: Request) {
     // Configure Puppeteer to use @sparticuz/chromium
     const browser = await puppeteer.launch({
       args: [...chromium.args, '--hide-scrollbars', '--disable-web-security'],
-      // Removed chromium.defaultViewport as it's not a direct property
       defaultViewport: { width: 1280, height: 720 }, // Set a common default viewport
       executablePath: await chromium.executablePath(
         `https://github.com/Sparticuz/chromium/releases/download/v126.0.0/chromium-v126.0.0-pack.tar` // Use a specific version for stability
       ),
-      headless: chromium.headless, // Use chromium.headless (which is a boolean)
+      headless: true, // Use true directly as chromium.headless might not exist or be a boolean
       ignoreHTTPSErrors: true,
     });
 

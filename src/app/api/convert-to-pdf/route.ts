@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
-import puppeteer from 'puppeteer';
+// import puppeteer from 'puppeteer'; // No longer importing full puppeteer
+import puppeteer from 'puppeteer-core'; // Use puppeteer-core
+import chromium from '@sparticuz/chromium'; // Import sparticuz/chromium
 import { Readable } from 'stream';
 import mammoth from 'mammoth';
-import axios from 'axios'; // Using axios for server-side HTTP requests, more common for APIs
+import axios from 'axios';
 
 // Define interfaces for CloudConvert API response (still needed for other parts if not removed)
-// If you decide to completely remove CloudConvert, you can remove these interfaces.
 interface CloudConvertTaskResultForm {
   url: string;
   parameters: Record<string, string>;
@@ -139,8 +140,6 @@ export async function POST(req: Request) {
       const ASPOSE_CLIENT_ID = '52aba14d-2168-4408-95b5-c13066ef64cd';
       const ASPOSE_CLIENT_SECRET = '209bff3d24db90658fe223e5992b5d82';
 
-      // No need for an explicit check here, Aspose API will return 401 if credentials are wrong.
-      // If you want to add a check for empty strings:
       if (!ASPOSE_CLIENT_ID || !ASPOSE_CLIENT_SECRET) {
         console.error("Aspose API credentials are not set. Please ensure Client ID and Client Secret are provided.");
         return NextResponse.json({ error: "Aspose API credentials are not configured." }, { status: 500 });
@@ -165,10 +164,6 @@ export async function POST(req: Request) {
         console.log("Aspose Access Token obtained.");
 
         // Step 2: Upload file to Aspose Storage (or convert directly if API supports it)
-        // For simplicity, we'll use a direct conversion endpoint if available,
-        // otherwise, we'd need to upload to Aspose Cloud Storage first.
-        // Aspose.Cells Cloud has a direct convert endpoint for stream/file.
-        
         const excelBuffer = Buffer.from(await file.arrayBuffer());
 
         const convertRes = await axios.put(
@@ -250,9 +245,15 @@ export async function POST(req: Request) {
     }
 
     console.log("Launching browser for PDF conversion...");
+    // Configure Puppeteer to use @sparticuz/chromium
     const browser = await puppeteer.launch({
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      args: [...chromium.args, '--hide-scrollbars', '--disable-web-security'],
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath(
+        `https://github.com/Sparticuz/chromium/releases/download/v126.0.0/chromium-v126.0.0-pack.tar` // Use a specific version for stability
+      ),
+      headless: chromium.headless,
+      ignoreHTTPSErrors: true,
     });
 
     const page = await browser.newPage();

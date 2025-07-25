@@ -252,7 +252,7 @@ export async function POST(req: Request) {
         `https://github.com/Sparticuz/chromium/releases/download/v126.0.0/chromium-v126.0.0-pack.tar` // Use a specific version for stability
       ),
       headless: true, // Use true directly as chromium.headless might not exist or be a boolean
-      ignoreHTTPSErrors: true,
+      // Removed ignoreHTTPSErrors as it's no longer a valid property
     });
 
     const page = await browser.newPage();

@@ -83,7 +83,16 @@ export default function Home() {
                 </p>
               </div>
             </Link>
-            {/* هنا تقدر تزيد مقالات أخرى من بعد */}
+            <Link href="/blog/how-to-convert-to-pdf" passHref>
+              <div className="bg-red-50 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 cursor-pointer text-left">
+                <h3 className="text-xl font-bold text-red-700 mb-2">
+                  How to Convert Files to PDF Easily with PDF361
+                </h3>
+                <p className="text-gray-600">
+                  Learn how to convert various file formats like Word, Excel, PowerPoint, and images to PDF using PDF361's online converter.
+                </p>
+              </div>
+            </Link>
           </div>
           <div className="text-center mt-8">
             <Link href="/blog" passHref>

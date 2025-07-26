@@ -15,7 +15,7 @@ export default function RootLayout({
       <body>
         {children} {/* هذا هو المحتوى ديال الصفحات ديالك */}
 
-        {/* هذا هو كود الـ Footer الجديد */}
+        {/* هذا هو كود الـ Footer الجديد والمحدث */}
         <footer className="bg-gray-800 text-white py-6 mt-12">
           <div className="container mx-auto px-4 text-center">
             <nav className="mb-4">
@@ -25,8 +25,12 @@ export default function RootLayout({
                     About Us
                   </a>
                 </li>
-                {/* هنا تقدر تزيد روابط لصفحات أخرى بحال Privacy Policy, Contact Us */}
-                {/* <li><a href="/privacy" className="hover:text-blue-400 transition-colors duration-300">Privacy Policy</a></li> */}
+                <li>
+                  <a href="/privacy" className="hover:text-blue-400 transition-colors duration-300">
+                    Privacy Policy
+                  </a>
+                </li>
+                {/* هنا تقدر تزيد روابط لصفحات أخرى بحال Contact Us, Terms of Service */}
                 {/* <li><a href="/contact" className="hover:text-blue-400 transition-colors duration-300">Contact Us</a></li> */}
               </ul>
             </nav>

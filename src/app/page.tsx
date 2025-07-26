@@ -63,17 +63,17 @@ export default function Home() {
                 </p>
               </div>
             </Link>
-            {/* هنا تقدر تزيد مقالات أخرى من بعد */}
-            {/* <Link href="/blog/another-article" passHref>
-              <div className="bg-blue-50 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 cursor-pointer text-left">
-                <h3 className="text-xl font-bold text-blue-700 mb-2">
-                  Another Great Article Title
+            <Link href="/blog/how-to-split-pdf" passHref>
+              <div className="bg-green-50 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 cursor-pointer text-left">
+                <h3 className="text-xl font-bold text-green-700 mb-2">
+                  How to Split PDF Files Easily with PDF361
                 </h3>
                 <p className="text-gray-600">
-                  A brief description of your next article.
+                  Learn how to split a single PDF file into multiple individual documents or extract specific pages using PDF361's online tool.
                 </p>
               </div>
-            </Link> */}
+            </Link>
+            {/* هنا تقدر تزيد مقالات أخرى من بعد */}
           </div>
           <div className="text-center mt-8">
             <Link href="/blog" passHref>

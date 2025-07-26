@@ -1,7 +1,8 @@
 // src/app/layout.tsx
 
-import './globals.css'; // Khalli hada ila kan
-import { Inter } from 'next/font/google'; // Importina Inter
+import './globals.css';
+import { Inter } from 'next/font/google';
+import Head from 'next/head'; // تأكد أن Head مستوردة من 'next/head'
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -12,10 +13,16 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={inter.className}>
+      <Head>
+        {/* هذا هو كود AdSense الذي يجب لصقه هنا */}
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2702391251174134"
+               crossorigin="anonymous"></script>
+        {/* هنا يمكن أن تكون لديك Meta tags أخرى أو روابط CSS */}
+      </Head>
       <body>
         {children} {/* هذا هو المحتوى ديال الصفحات ديالك */}
 
-        {/* هذا هو كود الـ Footer الجديد والمحدث */}
+        {/* ... Footer ديالك ... */}
         <footer className="bg-gray-800 text-white py-6 mt-12">
           <div className="container mx-auto px-4 text-center">
             <nav className="mb-4">

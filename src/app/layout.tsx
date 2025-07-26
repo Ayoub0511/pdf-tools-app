@@ -14,9 +14,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={inter.className}>
       <Head>
-        {/* هذا هو كود AdSense الذي يجب لصقه هنا */}
+        {/* هذا هو كود AdSense المصحح */}
         <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2702391251174134"
-               crossorigin="anonymous"></script>
+               crossOrigin="anonymous"></script> {/* هنا تم تصحيح crossorigin إلى crossOrigin */}
         {/* هنا يمكن أن تكون لديك Meta tags أخرى أو روابط CSS */}
       </Head>
       <body>

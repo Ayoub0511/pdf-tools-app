@@ -35,8 +35,11 @@ export default function RootLayout({
                     Terms of Service
                   </a>
                 </li>
-                {/* هنا تقدر تزيد روابط لصفحات أخرى بحال Contact Us */}
-                {/* <li><a href="/contact" className="hover:text-blue-400 transition-colors duration-300">Contact Us</a></li> */}
+                <li>
+                  <a href="/contact" className="hover:text-blue-400 transition-colors duration-300">
+                    Contact Us
+                  </a>
+                </li>
               </ul>
             </nav>
             <p className="text-sm text-gray-400">

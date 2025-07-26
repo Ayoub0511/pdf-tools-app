@@ -73,6 +73,16 @@ export default function Home() {
                 </p>
               </div>
             </Link>
+            <Link href="/blog/how-to-compress-pdf" passHref>
+              <div className="bg-yellow-50 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 cursor-pointer text-left">
+                <h3 className="text-xl font-bold text-yellow-700 mb-2">
+                  How to Compress PDF Files Easily with PDF361
+                </h3>
+                <p className="text-gray-600">
+                  Learn how to reduce the file size of your PDF documents without compromising quality using PDF361's online compression tool.
+                </p>
+              </div>
+            </Link>
             {/* هنا تقدر تزيد مقالات أخرى من بعد */}
           </div>
           <div className="text-center mt-8">

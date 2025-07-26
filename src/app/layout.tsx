@@ -30,7 +30,12 @@ export default function RootLayout({
                     Privacy Policy
                   </a>
                 </li>
-                {/* هنا تقدر تزيد روابط لصفحات أخرى بحال Contact Us, Terms of Service */}
+                <li>
+                  <a href="/terms" className="hover:text-blue-400 transition-colors duration-300">
+                    Terms of Service
+                  </a>
+                </li>
+                {/* هنا تقدر تزيد روابط لصفحات أخرى بحال Contact Us */}
                 {/* <li><a href="/contact" className="hover:text-blue-400 transition-colors duration-300">Contact Us</a></li> */}
               </ul>
             </nav>

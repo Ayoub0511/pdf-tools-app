@@ -1,3 +1,4 @@
+import React from 'react'; // <--- The new line to fix the error
 import Link from 'next/link';
 import { FaFilePdf, FaFileArchive, FaCompress, FaTools, FaTimes, FaExchangeAlt } from 'react-icons/fa';
 

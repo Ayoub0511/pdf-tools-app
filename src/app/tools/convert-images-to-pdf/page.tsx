@@ -5,7 +5,7 @@ import { FaFileImage, FaFilePdf, FaFileUpload, FaDownload } from 'react-icons/fa
 import jsPDF from 'jspdf'; // Library to create PDF files
 
 const ImagesToPdfPage = () => {
-  const [files, setFiles] = useState([]); // State to store the selected images
+  const [files, setFiles] = useState<File[]>([]); // State to store the selected images
   const [pdfUrl, setPdfUrl] = useState(''); // State to store the URL of the generated PDF
   const [isProcessing, setIsProcessing] = useState(false); // Loading state
   const [error, setError] = useState(''); // Error message state

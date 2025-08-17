@@ -11,7 +11,7 @@ const ImagesToPdfPage = () => {
   const [error, setError] = useState(''); // Error message state
 
   // Function to handle file selection
-  const handleFileChange = (e) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(e.target.files);
     const validFiles = selectedFiles.filter(file => 
       file.type === 'image/jpeg' || file.type === 'image/png' || file.type === 'image/gif'

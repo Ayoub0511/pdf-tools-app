@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { FaFilePdf, FaFileArchive, FaCompress, FaTools, FaTimes, FaExchangeAlt } from 'react-icons/fa';
 
 // Array of all available tools

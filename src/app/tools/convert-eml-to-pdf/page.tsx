@@ -3,8 +3,17 @@
 import React, { useState } from 'react';
 import { FaFilePdf, FaFileArchive, FaDownload } from 'react-icons/fa';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable'; // Optional: if you want to add tables
-import * as mailparser from 'mailparser';
+import 'jspdf-autotable';
+
+// Type definitions for the email data received from the server
+interface EmailData {
+  subject?: string;
+  from?: string;
+  to?: string;
+  date?: string;
+  html?: string;
+  text?: string;
+}
 
 const EmlToPdfPage = () => {
   const [file, setFile] = useState<File | null>(null);
@@ -27,7 +36,7 @@ const EmlToPdfPage = () => {
     }
   };
 
-  // Converts the EML file content to a PDF document
+  // Converts the EML file to a PDF document using the server-side API
   const convertToPdf = async () => {
     if (!file) {
       setError('المرجو اختيار ملف أولا.');
@@ -38,45 +47,43 @@ const EmlToPdfPage = () => {
     setError('');
 
     try {
-      // Create a FileReader to read the file content as an ArrayBuffer
-      const reader = new FileReader();
-      reader.readAsArrayBuffer(file);
+      const formData = new FormData();
+      formData.append('emlFile', file);
 
-      // Use a Promise to handle the async FileReader operation
-      const buffer = await new Promise<Buffer>((resolve, reject) => {
-        reader.onload = (event) => {
-          if (event.target && event.target.result) {
-            resolve(Buffer.from(event.target.result as ArrayBuffer));
-          } else {
-            reject(new Error("Failed to read file."));
-          }
-        };
-        reader.onerror = (error) => reject(error);
+      // Send the file to the new API endpoint
+      const response = await fetch('/api/convert-eml', {
+        method: 'POST',
+        body: formData,
       });
 
-      // Parse the email content from the buffer
-      const email = await mailparser.simpleParser(buffer);
+      if (!response.ok) {
+        throw new Error('Server conversion failed.');
+      }
 
-      // Create a new jsPDF instance
+      const emailData: EmailData = await response.json();
+
+      // Create a new jsPDF instance on the client-side
       const doc = new jsPDF();
       
       const contentDiv = document.createElement('div');
       contentDiv.style.padding = '20px';
       
       // Add email metadata
-      const subject = email.subject || '(بدون موضوع)';
-      const from = email.from ? email.from.text : '(غير معروف)';
-      const to = email.to ? (Array.isArray(email.to) ? email.to.map(t => t.text).join(', ') : email.to.text) : '(غير معروف)';
-      const date = email.date ? new Date(email.date).toLocaleString('ar-MA') : '(غير معروف)';
+      const subject = emailData.subject || '(بدون موضوع)';
+      const from = emailData.from || '(غير معروف)';
+      const to = emailData.to || '(غير معروف)';
+      const date = emailData.date ? new Date(emailData.date).toLocaleString('ar-MA') : '(غير معروف)';
 
       contentDiv.innerHTML = `
-        <h1 style="font-size: 24px; font-weight: bold; margin-bottom: 20px;">الموضوع: ${subject}</h1>
-        <p style="font-size: 14px; margin-bottom: 5px;"><strong>من:</strong> ${from}</p>
-        <p style="font-size: 14px; margin-bottom: 5px;"><strong>إلى:</strong> ${to}</p>
-        <p style="font-size: 14px; margin-bottom: 20px;"><strong>التاريخ:</strong> ${date}</p>
-        <hr style="border: 1px solid #ccc; margin-bottom: 20px;">
-        <div style="font-size: 16px;">
-          ${email.html || email.textAsHtml || email.text.replace(/\n/g, '<br>')}
+        <div style="font-family: Arial, sans-serif;">
+          <h1 style="font-size: 24px; font-weight: bold; margin-bottom: 20px;">الموضوع: ${subject}</h1>
+          <p style="font-size: 14px; margin-bottom: 5px;"><strong>من:</strong> ${from}</p>
+          <p style="font-size: 14px; margin-bottom: 5px;"><strong>إلى:</strong> ${to}</p>
+          <p style="font-size: 14px; margin-bottom: 20px;"><strong>التاريخ:</strong> ${date}</p>
+          <hr style="border: 1px solid #ccc; margin-bottom: 20px;">
+          <div style="font-size: 16px;">
+            ${emailData.html || emailData.text?.replace(/\n/g, '<br>') || '<div>(لا يوجد محتوى في الرسالة)</div>'}
+          </div>
         </div>
       `;
 

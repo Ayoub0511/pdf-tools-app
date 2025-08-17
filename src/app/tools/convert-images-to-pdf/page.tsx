@@ -52,8 +52,14 @@ const ImagesToPdfPage = () => {
         const reader = new FileReader();
         
         // Use a promise to handle the FileReader async process
-        const imageData = await new Promise((resolve) => {
-          reader.onload = (e) => resolve(e.target.result);
+        const imageData = await new Promise<string>((resolve, reject) => {
+          reader.onload = (e) => {
+            if (e.target && e.target.result) {
+              resolve(e.target.result as string);
+            } else {
+              reject(new Error("Failed to read file"));
+            }
+          };
           reader.readAsDataURL(file);
         });
 

@@ -1,3 +1,4 @@
+[⚠️ Suspicious Content] // src/app/tools/convert-images-to-pdf/page.tsx
 'use client';
 
 import React, { useState } from 'react';
@@ -12,6 +13,12 @@ const ImagesToPdfPage = () => {
 
   // Function to handle file selection
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Aggiungi un controllo per assicurarti che e.target.files non sia null
+    if (!e.target.files) {
+      setFiles([]);
+      return;
+    }
+
     const selectedFiles = Array.from(e.target.files);
     const validFiles = selectedFiles.filter(file => 
       file.type === 'image/jpeg' || file.type === 'image/png' || file.type === 'image/gif'

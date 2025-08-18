@@ -1,16 +1,7 @@
-// src/app/tools/convert-eml-to-pdf/page.tsx
 'use client';
 
 import React, { useState } from 'react';
 import { FaFileArchive, FaFilePdf, FaFileUpload, FaDownload, FaTimes } from 'react-icons/fa';
-
-// Optional: This is the page's metadata. This is what sets the title of the browser tab.
-export const metadata = {
-  title: 'تحويل EML إلى PDF - PDF361',
-  description: 'أداة مجانية وسهلة لتحويل ملفات البريد الإلكتروني (EML) إلى صيغة PDF قابلة للمشاركة.',
-};
-
-// ... (rest of the code remains the same as before)
 
 const ConvertEmlToPdfPage = () => {
     // State to hold the selected file

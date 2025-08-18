@@ -5,11 +5,6 @@ import React, { useState } from 'react';
 import { FaFileArchive, FaFilePdf, FaFileUpload, FaDownload, FaTimes } from 'react-icons/fa';
 import jsPDF from 'jspdf';
 
-// Helper function to reverse a string for right-to-left languages
-const reverseString = (str: string) => {
-    return str.split('').reverse().join('');
-};
-
 const ConvertEmlToPdfPage = () => {
     // State to hold the selected file
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -31,7 +26,7 @@ const ConvertEmlToPdfPage = () => {
     // Function to handle the conversion process
     const handleConvert = async () => {
         if (!selectedFile) {
-            setError('المرجو اختيار ملف eml أولا.');
+            setError('Please select an EML file first.');
             return;
         }
 
@@ -49,7 +44,7 @@ const ConvertEmlToPdfPage = () => {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.error || 'حدث خطأ أثناء التحويل.');
+                throw new Error(errorData.error || 'An error occurred during conversion.');
             }
 
             const emailData = await response.json();
@@ -57,15 +52,9 @@ const ConvertEmlToPdfPage = () => {
             // Create a new jsPDF instance
             const doc = new jsPDF();
             
-            // Check if jsPDF has the necessary font-related methods
-            if (!doc.addFont || !doc.setFont || !doc.setR2L) {
-                throw new Error('JS-PDF is not configured correctly. Please check the library dependencies.');
-            }
-            
-            // Add a try-catch block specifically for font loading
+            // Note: The font loading remains for Arabic/RTL support, but the UI is in English.
             try {
-                // Set font for Arabic text
-                // Make sure the file is located at /public/fonts/Amiri-Regular.ttf
+                // Set font for Arabic text, in case the EML contains Arabic content
                 doc.addFont('/fonts/Amiri-Regular.ttf', 'Amiri', 'normal');
                 doc.setFont('Amiri');
                 doc.setR2L(true); // Right-to-Left for Arabic
@@ -74,27 +63,21 @@ const ConvertEmlToPdfPage = () => {
                 throw new Error('Failed to load font. Please ensure Amiri-Regular.ttf is in the public/fonts folder.');
             }
 
-            // Reverse the text if it's in Arabic (you can add a more robust check here)
-            const reversedSubject = reverseString(emailData.subject);
-            const reversedFrom = reverseString(emailData.from);
-            const reversedTo = reverseString(emailData.to);
-            const reversedText = reverseString(emailData.text);
-
             // Add email details
             doc.setFontSize(22);
-            doc.text(`الموضوع: ${reversedSubject}`, 200, 20, { align: 'right' });
+            doc.text(`Subject: ${emailData.subject}`, 20, 20);
             doc.setFontSize(14);
-            doc.text(`من: ${reversedFrom}`, 200, 30, { align: 'right' });
-            doc.text(`إلى: ${reversedTo}`, 200, 40, { align: 'right' });
-            doc.text(`التاريخ: ${new Date(emailData.date).toLocaleString('ar-EG')}`, 200, 50, { align: 'right' });
+            doc.text(`From: ${emailData.from}`, 20, 30);
+            doc.text(`To: ${emailData.to}`, 20, 40);
+            doc.text(`Date: ${new Date(emailData.date).toLocaleString('en-US')}`, 20, 50);
 
             // Add a line break
             doc.line(20, 60, 200, 60);
 
-            // Add the email body text with a more suitable font for Arabic
+            // Add the email body text.
             doc.setFontSize(12);
-            const textLines = doc.splitTextToSize(reversedText, 180);
-            doc.text(textLines, 200, 70, { align: 'right' });
+            const textLines = doc.splitTextToSize(emailData.text, 180);
+            doc.text(textLines, 20, 70);
 
             // Save the PDF and create a URL for it
             const pdfBlob = doc.output('blob');
@@ -102,7 +85,7 @@ const ConvertEmlToPdfPage = () => {
 
         } catch (err: any) {
             console.error('Conversion failed:', err);
-            setError(err.message || 'حدث خطأ أثناء التحويل. المرجو التأكد من صحة الملف');
+            setError(err.message || 'An error occurred during conversion. Please check the file format.');
         } finally {
             setIsLoading(false);
         }
@@ -124,10 +107,10 @@ const ConvertEmlToPdfPage = () => {
         <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
             <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-2xl text-center">
                 <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-800 mb-4">
-                    تحويل البريد الإلكتروني إلى PDF
+                    Email to PDF Converter
                 </h1>
                 <p className="text-gray-600 mb-8">
-                    تحويل ملفات البريد الإلكتروني '.eml' إلى PDF وحوله إلى ملف PDF.
+                    Convert your '.eml' email files into a downloadable PDF document.
                 </p>
 
                 <div className="flex justify-center items-center mb-6">
@@ -142,7 +125,7 @@ const ConvertEmlToPdfPage = () => {
                         className="cursor-pointer bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 transition duration-300"
                     >
                         <FaFileUpload className="inline-block mr-2" />
-                        اختيار ملف eml.
+                        Select EML file
                     </label>
                     <input
                         id="file-upload"
@@ -156,14 +139,14 @@ const ConvertEmlToPdfPage = () => {
                 {selectedFile && (
                     <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 mb-6 text-center">
                         <p className="text-gray-700 font-medium">
-                            تم اختيار: <span className="font-bold">{selectedFile.name}</span>
+                            Selected: <span className="font-bold">{selectedFile.name}</span>
                         </p>
                     </div>
                 )}
 
                 {error && (
                     <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6" role="alert">
-                        <p className="font-bold">خطأ!</p>
+                        <p className="font-bold">Error!</p>
                         <p>{error}</p>
                     </div>
                 )}
@@ -171,7 +154,7 @@ const ConvertEmlToPdfPage = () => {
                 {isLoading ? (
                     <div className="flex justify-center items-center mb-6">
                         <div className="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12 mr-4 animate-spin"></div>
-                        <p className="text-blue-600 font-medium">جاري التحويل...</p>
+                        <p className="text-blue-600 font-medium">Converting...</p>
                     </div>
                 ) : (
                     <button
@@ -182,19 +165,19 @@ const ConvertEmlToPdfPage = () => {
                         }`}
                     >
                         <FaFilePdf className="inline-block mr-2" />
-                        PDF تحويل إلى
+                        Convert to PDF
                     </button>
                 )}
 
                 {pdfUrl && (
                     <div className="mt-6">
-                        <h3 className="text-xl font-semibold mb-4">تم التحويل بنجاح!</h3>
+                        <h3 className="text-xl font-semibold mb-4">Conversion Successful!</h3>
                         <button
                             onClick={handleDownload}
                             className="bg-purple-600 text-white font-semibold py-3 px-8 rounded-lg shadow-md hover:bg-purple-700 transition duration-300"
                         >
                             <FaDownload className="inline-block mr-2" />
-                            تحميل الملف
+                            Download PDF
                         </button>
                     </div>
                 )}

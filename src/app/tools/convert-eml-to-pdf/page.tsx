@@ -1,4 +1,3 @@
-// src/app/tools/convert-eml-to-pdf/page.tsx
 'use client';
 
 import React, { useState } from 'react';
@@ -53,6 +52,7 @@ const ConvertEmlToPdfPage = () => {
             const doc = new jsPDF();
             
             // Set font for Arabic text
+            // Make sure the file is located at /public/fonts/Amiri-Regular.ttf
             doc.addFont('/fonts/Amiri-Regular.ttf', 'Amiri', 'normal');
             doc.setFont('Amiri');
             doc.setR2L(true); // Right-to-Left for Arabic
@@ -70,7 +70,6 @@ const ConvertEmlToPdfPage = () => {
 
             // Add the email body text with a more suitable font for Arabic
             doc.setFontSize(12);
-            // Split the text to fit the page
             const textLines = doc.splitTextToSize(emailData.text, 180);
             doc.text(textLines, 200, 70, { align: 'right' });
 
@@ -80,7 +79,8 @@ const ConvertEmlToPdfPage = () => {
 
         } catch (err: any) {
             console.error('Conversion failed:', err);
-            setError(err.message || 'حدث خطأ أثناء التحويل. المرجو التأكد من صحة الملف');
+            // Updated error message to be more specific
+            setError(err.message || 'حدث خطأ أثناء التحويل. تأكد من وجود ملف Amiri-Regular.ttf في مجلد /public/fonts');
         } finally {
             setIsLoading(false);
         }

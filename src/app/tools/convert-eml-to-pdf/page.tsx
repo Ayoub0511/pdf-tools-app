@@ -1,8 +1,14 @@
+// src/app/tools/convert-eml-to-pdf/page.tsx
 'use client';
 
 import React, { useState } from 'react';
 import { FaFileArchive, FaFilePdf, FaFileUpload, FaDownload, FaTimes } from 'react-icons/fa';
 import jsPDF from 'jspdf';
+
+// Helper function to reverse a string for right-to-left languages
+const reverseString = (str: string) => {
+    return str.split('').reverse().join('');
+};
 
 const ConvertEmlToPdfPage = () => {
     // State to hold the selected file
@@ -51,18 +57,35 @@ const ConvertEmlToPdfPage = () => {
             // Create a new jsPDF instance
             const doc = new jsPDF();
             
-            // Set font for Arabic text
-            // Make sure the file is located at /public/fonts/Amiri-Regular.ttf
-            doc.addFont('/fonts/Amiri-Regular.ttf', 'Amiri', 'normal');
-            doc.setFont('Amiri');
-            doc.setR2L(true); // Right-to-Left for Arabic
+            // Check if jsPDF has the necessary font-related methods
+            if (!doc.addFont || !doc.setFont || !doc.setR2L) {
+                throw new Error('JS-PDF is not configured correctly. Please check the library dependencies.');
+            }
+            
+            // Add a try-catch block specifically for font loading
+            try {
+                // Set font for Arabic text
+                // Make sure the file is located at /public/fonts/Amiri-Regular.ttf
+                doc.addFont('/fonts/Amiri-Regular.ttf', 'Amiri', 'normal');
+                doc.setFont('Amiri');
+                doc.setR2L(true); // Right-to-Left for Arabic
+            } catch (fontError) {
+                console.error('Font loading failed:', fontError);
+                throw new Error('Failed to load font. Please ensure Amiri-Regular.ttf is in the public/fonts folder.');
+            }
+
+            // Reverse the text if it's in Arabic (you can add a more robust check here)
+            const reversedSubject = reverseString(emailData.subject);
+            const reversedFrom = reverseString(emailData.from);
+            const reversedTo = reverseString(emailData.to);
+            const reversedText = reverseString(emailData.text);
 
             // Add email details
             doc.setFontSize(22);
-            doc.text(`الموضوع: ${emailData.subject}`, 200, 20, { align: 'right' });
+            doc.text(`الموضوع: ${reversedSubject}`, 200, 20, { align: 'right' });
             doc.setFontSize(14);
-            doc.text(`من: ${emailData.from}`, 200, 30, { align: 'right' });
-            doc.text(`إلى: ${emailData.to}`, 200, 40, { align: 'right' });
+            doc.text(`من: ${reversedFrom}`, 200, 30, { align: 'right' });
+            doc.text(`إلى: ${reversedTo}`, 200, 40, { align: 'right' });
             doc.text(`التاريخ: ${new Date(emailData.date).toLocaleString('ar-EG')}`, 200, 50, { align: 'right' });
 
             // Add a line break
@@ -70,7 +93,7 @@ const ConvertEmlToPdfPage = () => {
 
             // Add the email body text with a more suitable font for Arabic
             doc.setFontSize(12);
-            const textLines = doc.splitTextToSize(emailData.text, 180);
+            const textLines = doc.splitTextToSize(reversedText, 180);
             doc.text(textLines, 200, 70, { align: 'right' });
 
             // Save the PDF and create a URL for it
@@ -79,8 +102,7 @@ const ConvertEmlToPdfPage = () => {
 
         } catch (err: any) {
             console.error('Conversion failed:', err);
-            // Updated error message to be more specific
-            setError(err.message || 'حدث خطأ أثناء التحويل. تأكد من وجود ملف Amiri-Regular.ttf في مجلد /public/fonts');
+            setError(err.message || 'حدث خطأ أثناء التحويل. المرجو التأكد من صحة الملف');
         } finally {
             setIsLoading(false);
         }

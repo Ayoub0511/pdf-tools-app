@@ -1,6 +1,7 @@
 // src/app/api/convert-eml/route.ts
 import { NextResponse } from 'next/server';
 import * as mailparser from 'mailparser';
+import type { AddressObject } from 'mailparser';
 
 /**
  * Handles POST requests to convert an EML file to structured JSON data.
@@ -25,11 +26,25 @@ export async function POST(request: Request) {
     // Use simpleParser to get the email data
     const parsedEmail = await mailparser.simpleParser(emailBuffer);
 
+    // Helper function to handle both single address and array of addresses
+    const getAddressText = (address: string | AddressObject | AddressObject[] | undefined) => {
+      if (!address) {
+        return '';
+      }
+      if (Array.isArray(address)) {
+        return address.map(addr => addr.text).join(', ');
+      }
+      if (typeof address === 'object') {
+        return address.text || '';
+      }
+      return address;
+    };
+
     // We send back only the data needed to create the PDF on the client
     const emailData = {
       subject: parsedEmail.subject || '',
-      from: parsedEmail.from?.text || '',
-      to: parsedEmail.to?.text || '', // mailparser returns this as an object now
+      from: getAddressText(parsedEmail.from),
+      to: getAddressText(parsedEmail.to),
       date: parsedEmail.date?.toISOString() || '',
       html: parsedEmail.html || '',
       text: parsedEmail.text || '',

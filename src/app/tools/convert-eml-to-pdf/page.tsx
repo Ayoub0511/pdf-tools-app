@@ -1,7 +1,9 @@
+// src/app/tools/convert-eml-to-pdf/page.tsx
 'use client';
 
 import React, { useState } from 'react';
 import { FaFileArchive, FaFilePdf, FaFileUpload, FaDownload, FaTimes } from 'react-icons/fa';
+import jsPDF from 'jspdf';
 
 const ConvertEmlToPdfPage = () => {
     // State to hold the selected file
@@ -41,30 +43,40 @@ const ConvertEmlToPdfPage = () => {
             });
 
             if (!response.ok) {
-                // If the API returns an error, read the error message
                 const errorData = await response.json();
                 throw new Error(errorData.error || 'حدث خطأ أثناء التحويل.');
             }
 
             const emailData = await response.json();
 
-            // A placeholder for the PDF generation logic
-            // In a real app, you would use a library like jsPDF to generate the PDF
-            // We'll create a simple text-based PDF for demonstration
-            const pdfContent = `
-                Subject: ${emailData.subject}
-                From: ${emailData.from}
-                To: ${emailData.to}
-                Date: ${new Date(emailData.date).toLocaleString()}
-                
-                ---
-                
-                ${emailData.text}
-            `;
+            // Create a new jsPDF instance
+            const doc = new jsPDF();
             
-            // This is a dummy function to simulate PDF creation
-            const dummyPdfBlob = new Blob([pdfContent], { type: 'application/pdf' });
-            setPdfUrl(URL.createObjectURL(dummyPdfBlob));
+            // Set font for Arabic text
+            doc.addFont('/fonts/Amiri-Regular.ttf', 'Amiri', 'normal');
+            doc.setFont('Amiri');
+            doc.setR2L(true); // Right-to-Left for Arabic
+
+            // Add email details
+            doc.setFontSize(22);
+            doc.text(`الموضوع: ${emailData.subject}`, 200, 20, { align: 'right' });
+            doc.setFontSize(14);
+            doc.text(`من: ${emailData.from}`, 200, 30, { align: 'right' });
+            doc.text(`إلى: ${emailData.to}`, 200, 40, { align: 'right' });
+            doc.text(`التاريخ: ${new Date(emailData.date).toLocaleString('ar-EG')}`, 200, 50, { align: 'right' });
+
+            // Add a line break
+            doc.line(20, 60, 200, 60);
+
+            // Add the email body text with a more suitable font for Arabic
+            doc.setFontSize(12);
+            // Split the text to fit the page
+            const textLines = doc.splitTextToSize(emailData.text, 180);
+            doc.text(textLines, 200, 70, { align: 'right' });
+
+            // Save the PDF and create a URL for it
+            const pdfBlob = doc.output('blob');
+            setPdfUrl(URL.createObjectURL(pdfBlob));
 
         } catch (err: any) {
             console.error('Conversion failed:', err);

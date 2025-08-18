@@ -5,6 +5,11 @@ import React, { useState } from 'react';
 import { FaFileArchive, FaFilePdf, FaFileUpload, FaDownload, FaTimes } from 'react-icons/fa';
 import jsPDF from 'jspdf';
 
+// Helper function to reverse a string for right-to-left languages
+const reverseString = (str: string) => {
+    return str.split('').reverse().join('');
+};
+
 const ConvertEmlToPdfPage = () => {
     // State to hold the selected file
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -63,21 +68,27 @@ const ConvertEmlToPdfPage = () => {
                 throw new Error('Failed to load font. Please ensure Amiri-Regular.ttf is in the public/fonts folder.');
             }
 
+            // Reverse the text to fix the garbled Arabic issue
+            const reversedSubject = reverseString(emailData.subject);
+            const reversedFrom = reverseString(emailData.from);
+            const reversedTo = reverseString(emailData.to);
+            const reversedText = reverseString(emailData.text);
+
             // Add email details
             doc.setFontSize(22);
-            doc.text(`Subject: ${emailData.subject}`, 20, 20);
+            doc.text(`Subject: ${reversedSubject}`, 200, 20, { align: 'right' });
             doc.setFontSize(14);
-            doc.text(`From: ${emailData.from}`, 20, 30);
-            doc.text(`To: ${emailData.to}`, 20, 40);
-            doc.text(`Date: ${new Date(emailData.date).toLocaleString('en-US')}`, 20, 50);
+            doc.text(`From: ${reversedFrom}`, 200, 30, { align: 'right' });
+            doc.text(`To: ${reversedTo}`, 200, 40, { align: 'right' });
+            doc.text(`Date: ${new Date(emailData.date).toLocaleString('en-US')}`, 200, 50, { align: 'right' });
 
             // Add a line break
             doc.line(20, 60, 200, 60);
 
             // Add the email body text.
             doc.setFontSize(12);
-            const textLines = doc.splitTextToSize(emailData.text, 180);
-            doc.text(textLines, 20, 70);
+            const textLines = doc.splitTextToSize(reversedText, 180);
+            doc.text(textLines, 200, 70, { align: 'right' });
 
             // Save the PDF and create a URL for it
             const pdfBlob = doc.output('blob');

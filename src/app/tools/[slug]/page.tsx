@@ -1,5 +1,5 @@
 import React from 'react';
-import ToolPage from '../../../../components/ToolPage'; // Hna l'ghalat
+import ToolPage from '../../../components/ToolPage';
 
 interface ToolPageProps {
   params: { slug: string };

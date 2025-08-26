@@ -4,10 +4,10 @@ import stream from 'stream';
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(req) {
+export async function POST(req: Request) {
   try {
     const formData = await req.formData();
-    const uploadedFile = formData.get('image');
+    const uploadedFile = formData.get('image') as Blob | null;
 
     if (!uploadedFile) {
       return NextResponse.json({ error: 'No image uploaded' }, { status: 400 });
@@ -17,10 +17,10 @@ export async function POST(req) {
 
     const doc = new PDFDocument();
     
-    // Zid l-header dyal l-response
+    // Zid l-headers dyal l-response
     const headers = new Headers();
     headers.set('Content-Type', 'application/pdf');
-    headers.set('Content-Disposition', `attachment; filename="${uploadedFile.name}.pdf"`);
+    headers.set('Content-Disposition', `attachment; filename="converted.pdf"`);
 
     // Gha ncreer wahed stream bach n7to fiha l-PDF
     const pdfStream = doc.pipe(new stream.PassThrough());

@@ -1,8 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   i18n: {
-    locales: ['ar', 'en'], 
-    defaultLocale: 'en', // beddel hadchi mn 'ar' l' 'en'
+    locales: ['en', 'ar'], // 'en' hiya l'lougha l'default
+    defaultLocale: 'en',
   },
 };
 

@@ -1,31 +1,31 @@
+import React from 'react';
+import ToolPage from '../../../components/ToolPage';
 
-import { notFound } from 'next/navigation';
-import tools, { Tool } from '@/data/tools'; 
-
-export async function generateStaticParams() {
-  return tools.map((tool) => ({
-    slug: tool.slug,
-  }));
+interface ToolPageProps {
+  params: { slug: string };
 }
 
-export default async function ToolPage({ params }: { params: { slug: string } }) {
- const tool: Tool | undefined = tools.find((t) => t.slug === params.slug);
+const ToolDynamicPage: React.FC<ToolPageProps> = ({ params }) => {
+  const toolSlug = params.slug;
+  
+  // Had l'waqt, ghadi t'beddel l'content 3la 7sab l'slug
+  let title = '';
+  let description = '';
 
-  if (!tool) {
-    return notFound();
+  if (toolSlug === 'convert-to-pdf') {
+    title = 'Convert to PDF';
+    description = 'Convert various file formats (e.g. DOCX, JPG) to PDF.';
+  } else if (toolSlug === 'merge-pdf') {
+    title = 'Merge PDF';
+    description = 'Combine multiple PDF files into one.';
+  } else if (toolSlug === 'compress-pdf') {
+    title = 'Compress PDF';
+    description = 'Reduce the size of your PDF files.';
   }
-
-  const ToolComponent = tool.component;
-
-  if (!ToolComponent) {
-    return notFound();
-  }
-
+  
   return (
-    <div className="p-6">
-      <h1 className="text-3xl font-bold">{tool.name}</h1>
-      <p className="text-gray-600 mt-2 mb-6">{tool.description}</p>
-      <ToolComponent /> {/* Daba TypeScript ghadi yfham Hadchi */}
-    </div>
+    <ToolPage title={title} description={description} />
   );
-}
+};
+
+export default ToolDynamicPage;

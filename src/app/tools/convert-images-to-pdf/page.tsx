@@ -13,24 +13,18 @@ const ImagesToPdfPage = () => {
   // L'fonction li kat'tafcha les fichiers
   const handleFileChange = (e) => {
     // T'akkad b'li kayn les fichiers w'l'input machi null
-    if (!e.target.files || e.target.files.length === 0) {
+    const input = e.target;
+    if (!input.files || input.files.length === 0) {
       setFiles([]);
       return;
     }
 
-    const selectedFiles = Array.from(e.target.files);
-
-    // Using a type guard function for a more robust check
-    const isFile = (value) => {
-      // Check if the value is an instance of File and its type is a string
-      return value instanceof File && typeof value.type === 'string';
-    };
+    // Explicitly cast to HTMLInputElement to access .files
+    const selectedFiles = Array.from((input as HTMLInputElement).files);
 
     const validFiles = selectedFiles.filter(file => {
-      if (isFile(file)) {
-        return ['image/jpeg', 'image/png', 'image/gif'].includes(file.type);
-      }
-      return false;
+      // Daba TypeScript kay'3raf beli "file" raha "File" w'fiha "type"
+      return ['image/jpeg', 'image/png', 'image/gif'].includes(file.type);
     });
 
     if (validFiles.length > 0) {
@@ -190,32 +184,4 @@ const ImagesToPdfPage = () => {
           <div className="mt-8">
             <button
               onClick={downloadPdf}
-              className="w-full py-4 font-bold text-white bg-purple-600 rounded-lg shadow-lg hover:bg-purple-700 transition duration-300"
-            >
-              <FaDownload className="inline-block mr-2" />
-              تحميل ملف PDF
-            </button>
-          </div>
-        )}
-      </div>
-
-      <style jsx>{`
-        .loader {
-          border-top-color: #3B82F6;
-          -webkit-animation: spinner 1.5s linear infinite;
-          animation: spinner 1.5s linear infinite;
-        }
-        @-webkit-keyframes spinner {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-        @keyframes spinner {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-      `}</style>
-    </div>
-  );
-};
-
-export default ImagesToPdfPage;
+              className="w-full p

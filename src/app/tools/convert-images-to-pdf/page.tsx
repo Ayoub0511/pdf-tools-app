@@ -18,6 +18,7 @@ const ImagesToPdfPage = () => {
       return;
     }
 
+    // Explicitly define the type of the files
     const selectedFiles = Array.from(e.target.files);
 
     const validFiles = selectedFiles.filter(file => {

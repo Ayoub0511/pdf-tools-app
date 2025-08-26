@@ -1,5 +1,5 @@
 import React from 'react';
-import ToolCard from '../../components/ToolCard';
+import ToolPage from '../../../../components/ToolPage'; // Hna l'ghalat
 
 interface ToolPageProps {
   params: { slug: string };
@@ -23,7 +23,7 @@ const ToolDynamicPage: React.FC<ToolPageProps> = ({ params }) => {
   }
   
   return (
-    <ToolCard title={title} description={description} />
+    <ToolPage title={title} description={description} /> // Beddel "ToolCard" b' "ToolPage"
   );
 };
 

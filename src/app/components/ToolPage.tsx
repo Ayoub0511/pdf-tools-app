@@ -1,6 +1,5 @@
 import React from 'react';
 
-// Had Interface kat3awnek t'khdem mzyan b'Typescript
 interface ToolPageProps {
   title: string;
   description: string;

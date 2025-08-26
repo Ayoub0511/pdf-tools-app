@@ -1,11 +1,7 @@
 import PDFDocument from 'pdfkit';
 import { NextResponse } from 'next/server';
 
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+export const dynamic = 'force-dynamic';
 
 export async function POST(req) {
   try {
@@ -20,12 +16,10 @@ export async function POST(req) {
 
     const doc = new PDFDocument();
     
-    // Zid l-header dyal l-response
     const headers = new Headers();
     headers.set('Content-Type', 'application/pdf');
     headers.set('Content-Disposition', `attachment; filename="${uploadedFile.name}.pdf"`);
 
-    // Gha ncreer wahed stream bach n7to fiha l-PDF
     const stream = doc.pipe(new require('stream').PassThrough());
 
     doc.image(fileBuffer, {
@@ -36,7 +30,6 @@ export async function POST(req) {
 
     doc.end();
 
-    // Red l-PDF l-l-user
     return new NextResponse(stream, { headers });
 
   } catch (error) {

@@ -12,13 +12,16 @@ const ImagesToPdfPage = () => {
 
   // L'fonction li kat'tafcha les fichiers
   const handleFileChange = (e) => {
-    if (!e.target.files) {
+    // T'akkad b'li kayn les fichiers w'l'input machi null
+    if (!e.target.files || e.target.files.length === 0) {
       setFiles([]);
       return;
     }
 
     const selectedFiles = Array.from(e.target.files);
-    const validFiles = selectedFiles.filter(file =>
+
+    // Khasna n'dirou 'as' bash ngoulo l'TypeScript b'li hadchi rah File
+    const validFiles = selectedFiles.filter((file) =>
       file.type === 'image/jpeg' || file.type === 'image/png' || file.type === 'image/gif'
     );
 
@@ -116,7 +119,7 @@ const ImagesToPdfPage = () => {
           <FaFileImage className="text-blue-500 text-6xl mr-2" />
           <FaFilePdf className="text-red-500 text-6xl" />
         </div>
-        
+
         <div className="flex flex-col items-center space-y-4 mb-6">
           <label
             htmlFor="file-upload"

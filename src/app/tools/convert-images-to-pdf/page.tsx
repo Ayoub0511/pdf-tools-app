@@ -18,13 +18,14 @@ const ImagesToPdfPage = () => {
       return;
     }
 
+    // Ahad Tariqa Sahih b'TypeScript. Kat'9ra ga3 les fichiers bhal "File[]"
     const selectedFiles = Array.from(e.target.files);
 
-    // Khasna n'dirou 'as' bash ngoulo l'TypeScript b'li hadchi rah File[]
     const validFiles = selectedFiles.filter(file => {
-      // TypeScript makay'3rafsh "file.type" gha b'raso, khasna n'3tiwh l'type b'yeddina
-      const isFile = (f) => f && typeof f.type === 'string';
-      return isFile(file) && (file.type === 'image/jpeg' || file.type === 'image/png' || file.type === 'image/gif');
+      if (file && typeof file.type === 'string') {
+        return ['image/jpeg', 'image/png', 'image/gif'].includes(file.type);
+      }
+      return false;
     });
 
     if (validFiles.length > 0) {

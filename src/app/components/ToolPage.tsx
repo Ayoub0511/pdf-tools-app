@@ -17,10 +17,10 @@ const ToolPage: React.FC<ToolPageProps> = ({ title, description }) => {
         <span style={{ margin: '0 1rem' }}>Aucun fichier choisi</span>
       </div>
       <button style={{ padding: '0.5rem 2rem' }}>
-        Convert
-      </button>
-    </div>
-  );
-};
+          Convert
+        </button>
+      </div>
+    );
+  };
 
 export default ToolPage;

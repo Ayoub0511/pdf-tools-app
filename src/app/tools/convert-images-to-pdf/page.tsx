@@ -18,13 +18,19 @@ const ImagesToPdfPage = () => {
       return;
     }
 
-    // Explicitly define the type of the files
     const selectedFiles = Array.from(e.target.files);
 
+    // Using a type guard function for a more robust check
+    const isFile = (value) => {
+      // Check if the value is an instance of File and its type is a string
+      return value instanceof File && typeof value.type === 'string';
+    };
+
     const validFiles = selectedFiles.filter(file => {
-      // TypeScript makay'3rafsh "file.type" gha b'raso, khasna n'3tiwh l'type b'yeddina
-      const fileTyped = file;
-      return ['image/jpeg', 'image/png', 'image/gif'].includes(fileTyped.type);
+      if (isFile(file)) {
+        return ['image/jpeg', 'image/png', 'image/gif'].includes(file.type);
+      }
+      return false;
     });
 
     if (validFiles.length > 0) {

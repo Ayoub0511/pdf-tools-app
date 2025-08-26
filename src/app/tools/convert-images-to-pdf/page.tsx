@@ -65,7 +65,8 @@ const ImagesToPdfPage = () => {
         });
 
         const img = new Image();
-        img.src = imageData;
+        // Here we explicitly cast imageData to a string to satisfy TypeScript
+        img.src = imageData as string;
 
         await new Promise((resolve) => {
           img.onload = resolve;
@@ -84,7 +85,7 @@ const ImagesToPdfPage = () => {
         const x = (pageWidth - scaledWidth) / 2;
         const y = (pageHeight - scaledHeight) / 2;
 
-        doc.addImage(imageData, 'JPEG', x, y, scaledWidth, scaledHeight);
+        doc.addImage(imageData as string, 'JPEG', x, y, scaledWidth, scaledHeight);
       }
 
       const pdfBlob = doc.output('blob');

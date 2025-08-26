@@ -1,5 +1,5 @@
 import React from 'react';
-import ToolCard from '../../../../components/ToolCard';
+import ToolCard from '../../components/ToolCard';
 
 interface ToolPageProps {
   params: { slug: string };

@@ -16,6 +16,14 @@ export default function ImageToPdfPage() {
     }
   };
 
+  const handleButtonClick = () => {
+    // Had l-check houwa l-mochkil!
+    const fileInput = document.getElementById('fileInput');
+    if (fileInput) {
+      fileInput.click();
+    }
+  };
+
   const handleConvert = async () => {
     if (!selectedFile) {
       alert("3afak khtar wahed l'image!");
@@ -62,7 +70,7 @@ export default function ImageToPdfPage() {
         onChange={handleFileChange} 
       />
       <button 
-        onClick={() => document.getElementById('fileInput').click()}
+        onClick={handleButtonClick}
       >
         Choisir un fichier
       </button>
@@ -70,5 +78,4 @@ export default function ImageToPdfPage() {
       <button onClick={handleConvert}>Convert</button>
     </div>
   );
-  
 }

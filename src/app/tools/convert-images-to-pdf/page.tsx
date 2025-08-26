@@ -10,9 +10,8 @@ const ImagesToPdfPage = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState('');
 
-  // L'fonction li kat'tafcha les fichiers
+  // Function to handle file selection
   const handleFileChange = (e) => {
-    // T'akkad b'li kayn les fichiers w'l'input machi null
     const input = e.target;
     if (!input.files || input.files.length === 0) {
       setFiles([]);
@@ -23,7 +22,7 @@ const ImagesToPdfPage = () => {
     const selectedFiles = Array.from((input as HTMLInputElement).files);
 
     const validFiles = selectedFiles.filter(file => {
-      // Daba TypeScript kay'3raf beli "file" raha "File" w'fiha "type"
+      // Check if the file is a valid image type
       return ['image/jpeg', 'image/png', 'image/gif'].includes(file.type);
     });
 
@@ -33,13 +32,13 @@ const ImagesToPdfPage = () => {
       setPdfUrl('');
     } else {
       setFiles([]);
-      setError('المرجو اختيار صور بصيغة JPG, PNG, أو GIF.');
+      setError('Please select files of type JPG, PNG, or GIF.');
     }
   };
 
   const convertToPdf = async () => {
     if (files.length === 0) {
-      setError('المرجو اختيار صور أولا.');
+      setError('Please select images first.');
       return;
     }
 
@@ -94,7 +93,7 @@ const ImagesToPdfPage = () => {
 
     } catch (err) {
       console.error('Conversion error:', err);
-      setError('حدث خطأ أثناء التحويل. المرجو المحاولة مرة أخرى.');
+      setError('An error occurred during conversion. Please try again.');
     } finally {
       setIsProcessing(false);
     }
@@ -114,8 +113,8 @@ const ImagesToPdfPage = () => {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
       <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-2xl text-center">
-        <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-800 mb-6">تحويل الصور إلى PDF</h1>
-        <p className="text-gray-600 mb-8">اختر مجموعة من الصور وحولها إلى ملف PDF واحد بجودة عالية.</p>
+        <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-800 mb-6">Image to PDF Converter</h1>
+        <p className="text-gray-600 mb-8">Select multiple images and convert them into a single high-quality PDF file.</p>
 
         <div className="flex justify-center items-center mb-6">
           <FaFileImage className="text-blue-500 text-6xl mr-2" />
@@ -128,7 +127,7 @@ const ImagesToPdfPage = () => {
             className="cursor-pointer bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 transition duration-300"
           >
             <FaFileUpload className="inline-block mr-2" />
-            اختيار الصور (JPG, PNG, GIF)
+            Select Images (JPG, PNG, GIF)
           </label>
           <input
             id="file-upload"
@@ -140,14 +139,14 @@ const ImagesToPdfPage = () => {
           />
           {files.length === 0 && (
             <p className="text-gray-500 mt-2 text-sm">
-              <span className="font-bold">أو</span> قم بسحب وإسقاط الصور هنا.
+              <span className="font-bold">or</span> drag and drop images here.
             </p>
           )}
         </div>
 
         {files.length > 0 && (
           <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 mb-6">
-            <p className="text-gray-700 font-medium">تم اختيار <span className="font-bold">{files.length}</span> ملف.</p>
+            <p className="text-gray-700 font-medium">Selected <span className="font-bold">{files.length}</span> files.</p>
             <div className="mt-2 flex flex-wrap justify-center gap-2">
               {files.map((file, index) => (
                 <span key={index} className="bg-gray-200 text-gray-700 text-sm px-2 py-1 rounded-md">{file.name}</span>
@@ -158,7 +157,7 @@ const ImagesToPdfPage = () => {
 
         {error && (
           <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6" role="alert">
-            <p className="font-bold">خطأ!</p>
+            <p className="font-bold">Error!</p>
             <p>{error}</p>
           </div>
         )}
@@ -166,7 +165,7 @@ const ImagesToPdfPage = () => {
         {isProcessing ? (
           <div className="flex flex-col items-center">
             <div className="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12 mb-4"></div>
-            <p className="text-blue-600 font-medium">المرجو الانتظار، جاري التحويل...</p>
+            <p className="text-blue-600 font-medium">Please wait, converting...</p>
           </div>
         ) : (
           <button
@@ -176,7 +175,7 @@ const ImagesToPdfPage = () => {
               files.length > 0 ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-400 cursor-not-allowed'
             }`}
           >
-            تحويل إلى PDF
+            Convert to PDF
           </button>
         )}
 
@@ -184,4 +183,32 @@ const ImagesToPdfPage = () => {
           <div className="mt-8">
             <button
               onClick={downloadPdf}
-              className="w-full p
+              className="w-full py-4 font-bold text-white bg-purple-600 rounded-lg shadow-lg hover:bg-purple-700 transition duration-300"
+            >
+              <FaDownload className="inline-block mr-2" />
+              Download PDF
+            </button>
+          </div>
+        )}
+      </div>
+
+      <style jsx>{`
+        .loader {
+          border-top-color: #3B82F6;
+          -webkit-animation: spinner 1.5s linear infinite;
+          animation: spinner 1.5s linear infinite;
+        }
+        @-webkit-keyframes spinner {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        @keyframes spinner {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
+    </div>
+  );
+};
+
+export default ImagesToPdfPage;

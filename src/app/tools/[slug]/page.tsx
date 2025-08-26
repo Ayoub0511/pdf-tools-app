@@ -1,31 +1,30 @@
 import React from 'react';
-import ToolPage from '../../../components/ToolPage';
+import ToolCard from '../../../components/ToolCard'; // Hna huya l'ghalt
 
 interface ToolPageProps {
-  params: { slug: string };
+  params: { slug: string };
 }
 
 const ToolDynamicPage: React.FC<ToolPageProps> = ({ params }) => {
-  const toolSlug = params.slug;
-  
-  // Had l'waqt, ghadi t'beddel l'content 3la 7sab l'slug
-  let title = '';
-  let description = '';
+  const toolSlug = params.slug;
+  
+  let title = '';
+  let description = '';
 
-  if (toolSlug === 'convert-to-pdf') {
-    title = 'Convert to PDF';
-    description = 'Convert various file formats (e.g. DOCX, JPG) to PDF.';
-  } else if (toolSlug === 'merge-pdf') {
-    title = 'Merge PDF';
-    description = 'Combine multiple PDF files into one.';
-  } else if (toolSlug === 'compress-pdf') {
-    title = 'Compress PDF';
-    description = 'Reduce the size of your PDF files.';
-  }
-  
-  return (
-    <ToolPage title={title} description={description} />
-  );
+  if (toolSlug === 'convert-to-pdf') {
+    title = 'Convert to PDF';
+    description = 'Convert various file formats (e.g. DOCX, JPG) to PDF.';
+  } else if (toolSlug === 'merge-pdf') {
+    title = 'Merge PDF';
+    description = 'Combine multiple PDF files into one.';
+  } else if (toolSlug === 'compress-pdf') {
+    title = 'Compress PDF';
+    description = 'Reduce the size of your PDF files.';
+  }
+  
+  return (
+    <ToolCard title={title} description={description} /> // Bdel "ToolPage" b' "ToolCard"
+  );
 };
 
 export default ToolDynamicPage;

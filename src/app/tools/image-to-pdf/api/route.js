@@ -1,5 +1,6 @@
 import PDFDocument from 'pdfkit';
 import { NextResponse } from 'next/server';
+import stream from 'stream';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,11 +17,13 @@ export async function POST(req) {
 
     const doc = new PDFDocument();
     
+    // Zid l-header dyal l-response
     const headers = new Headers();
     headers.set('Content-Type', 'application/pdf');
     headers.set('Content-Disposition', `attachment; filename="${uploadedFile.name}.pdf"`);
 
-    const stream = doc.pipe(new require('stream').PassThrough());
+    // Gha ncreer wahed stream bach n7to fiha l-PDF
+    const pdfStream = doc.pipe(new stream.PassThrough());
 
     doc.image(fileBuffer, {
       fit: [doc.page.width, doc.page.height],
@@ -30,7 +33,8 @@ export async function POST(req) {
 
     doc.end();
 
-    return new NextResponse(stream, { headers });
+    // Red l-PDF l-l-user
+    return new NextResponse(pdfStream, { headers });
 
   } catch (error) {
     console.error('Mochkil f-conversion:', error);

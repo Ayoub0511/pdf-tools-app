@@ -2,24 +2,23 @@
 
 import React, { useState } from 'react';
 import { FaFileImage, FaFilePdf, FaFileUpload, FaDownload } from 'react-icons/fa';
-import jsPDF from 'jspdf'; // Library to create PDF files
+import jsPDF from 'jspdf';
 
 const ImagesToPdfPage = () => {
-  const [files, setFiles] = useState<File[]>([]); // State to store the selected images
-  const [pdfUrl, setPdfUrl] = useState(''); // State to store the URL of the generated PDF
-  const [isProcessing, setIsProcessing] = useState(false); // Loading state
-  const [error, setError] = useState(''); // Error message state
+  const [files, setFiles] = useState([]);
+  const [pdfUrl, setPdfUrl] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState('');
 
-  // Function to handle file selection
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Aggiungi un controllo per assicurarti che e.target.files non sia null
+  // L'fonction li kat'tafcha les fichiers
+  const handleFileChange = (e) => {
     if (!e.target.files) {
       setFiles([]);
       return;
     }
 
     const selectedFiles = Array.from(e.target.files);
-    const validFiles = selectedFiles.filter(file => 
+    const validFiles = selectedFiles.filter(file =>
       file.type === 'image/jpeg' || file.type === 'image/png' || file.type === 'image/gif'
     );
 
@@ -33,7 +32,6 @@ const ImagesToPdfPage = () => {
     }
   };
 
-  // Function to convert selected images to PDF
   const convertToPdf = async () => {
     if (files.length === 0) {
       setError('المرجو اختيار صور أولا.');
@@ -45,17 +43,16 @@ const ImagesToPdfPage = () => {
 
     try {
       const doc = new jsPDF();
-      doc.deletePage(1); // Remove the default empty page
+      doc.deletePage(1);
 
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         const reader = new FileReader();
-        
-        // Use a promise to handle the FileReader async process
-        const imageData = await new Promise<string>((resolve, reject) => {
+
+        const imageData = await new Promise((resolve, reject) => {
           reader.onload = (e) => {
             if (e.target && e.target.result) {
-              resolve(e.target.result as string);
+              resolve(e.target.result);
             } else {
               reject(new Error("Failed to read file"));
             }
@@ -65,19 +62,17 @@ const ImagesToPdfPage = () => {
 
         const img = new Image();
         img.src = imageData;
-        
+
         await new Promise((resolve) => {
           img.onload = resolve;
         });
 
-        // Add a new page for each image
         doc.addPage();
         const pageWidth = doc.internal.pageSize.getWidth();
         const pageHeight = doc.internal.pageSize.getHeight();
         const imgWidth = img.width;
         const imgHeight = img.height;
 
-        // Calculate aspect ratio and scale image to fit the page
         const ratio = Math.min(pageWidth / imgWidth, pageHeight / imgHeight);
         const scaledWidth = imgWidth * ratio;
         const scaledHeight = imgHeight * ratio;
@@ -88,7 +83,6 @@ const ImagesToPdfPage = () => {
         doc.addImage(imageData, 'JPEG', x, y, scaledWidth, scaledHeight);
       }
 
-      // Generate the PDF blob and create a URL
       const pdfBlob = doc.output('blob');
       const url = URL.createObjectURL(pdfBlob);
       setPdfUrl(url);
@@ -101,7 +95,6 @@ const ImagesToPdfPage = () => {
     }
   };
 
-  // Function to trigger the PDF download
   const downloadPdf = () => {
     if (pdfUrl) {
       const link = document.createElement('a');
@@ -123,23 +116,28 @@ const ImagesToPdfPage = () => {
           <FaFileImage className="text-blue-500 text-6xl mr-2" />
           <FaFilePdf className="text-red-500 text-6xl" />
         </div>
-
+        
         <div className="flex flex-col items-center space-y-4 mb-6">
-          <label 
-            htmlFor="file-upload" 
+          <label
+            htmlFor="file-upload"
             className="cursor-pointer bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 transition duration-300"
           >
             <FaFileUpload className="inline-block mr-2" />
             اختيار الصور (JPG, PNG, GIF)
           </label>
-          <input 
-            id="file-upload" 
-            type="file" 
-            accept="image/jpeg,image/png,image/gif" 
-            onChange={handleFileChange} 
+          <input
+            id="file-upload"
+            type="file"
+            accept="image/jpeg,image/png,image/gif"
+            onChange={handleFileChange}
             multiple
-            className="hidden" 
+            className="hidden"
           />
+          {files.length === 0 && (
+            <p className="text-gray-500 mt-2 text-sm">
+              <span className="font-bold">أو</span> قم بسحب وإسقاط الصور هنا.
+            </p>
+          )}
         </div>
 
         {files.length > 0 && (
@@ -166,8 +164,8 @@ const ImagesToPdfPage = () => {
             <p className="text-blue-600 font-medium">المرجو الانتظار، جاري التحويل...</p>
           </div>
         ) : (
-          <button 
-            onClick={convertToPdf} 
+          <button
+            onClick={convertToPdf}
             disabled={files.length === 0}
             className={`w-full py-4 font-bold text-white rounded-lg shadow-lg transition duration-300 ${
               files.length > 0 ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-400 cursor-not-allowed'
@@ -179,8 +177,8 @@ const ImagesToPdfPage = () => {
 
         {pdfUrl && (
           <div className="mt-8">
-            <button 
-              onClick={downloadPdf} 
+            <button
+              onClick={downloadPdf}
               className="w-full py-4 font-bold text-white bg-purple-600 rounded-lg shadow-lg hover:bg-purple-700 transition duration-300"
             >
               <FaDownload className="inline-block mr-2" />
@@ -188,7 +186,6 @@ const ImagesToPdfPage = () => {
             </button>
           </div>
         )}
-
       </div>
 
       <style jsx>{`

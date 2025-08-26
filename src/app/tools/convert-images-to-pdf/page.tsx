@@ -20,10 +20,11 @@ const ImagesToPdfPage = () => {
 
     const selectedFiles = Array.from(e.target.files);
 
-    // Daba kan'sifto l'TypeScript b'li hadchi rah File bach y'wafeq 3la file.type
-    const validFiles = selectedFiles.filter((file) => {
-      const typedFile = file;
-      return typedFile.type === 'image/jpeg' || typedFile.type === 'image/png' || typedFile.type === 'image/gif';
+    // Khasna n'dirou 'as' bash ngoulo l'TypeScript b'li hadchi rah File[]
+    const validFiles = selectedFiles.filter(file => {
+      // TypeScript makay'3rafsh "file.type" gha b'raso, khasna n'3tiwh l'type b'yeddina
+      const isFile = (f) => f && typeof f.type === 'string';
+      return isFile(file) && (file.type === 'image/jpeg' || file.type === 'image/png' || file.type === 'image/gif');
     });
 
     if (validFiles.length > 0) {

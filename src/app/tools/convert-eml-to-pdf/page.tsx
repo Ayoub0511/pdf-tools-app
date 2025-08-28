@@ -56,17 +56,19 @@ const App = () => {
   const sanitizeHtml = (htmlString) => {
     if (!htmlString) return '';
     const doc = new DOMParser().parseFromString(htmlString, 'text/html');
+    // Check if the element is an HTMLElement before accessing its style.
     doc.querySelectorAll('[style]').forEach(el => {
-      const htmlEl = el as HTMLElement;
-      if (htmlEl.style.length > 0) {
-        htmlEl.style.cssText = htmlEl.style.cssText.replace(/oklch\([^)]*\)/g, 'rgb(0,0,0)');
+      if (el instanceof HTMLElement) {
+        if (el.style.length > 0) {
+          el.style.cssText = el.style.cssText.replace(/oklch\([^)]*\)/g, 'rgb(0,0,0)');
+        }
       }
     });
     return doc.body.innerHTML;
   };
 
   const handlePrint = useCallback(() => {
-    const input = contentRef.current as HTMLElement | null; // This is the new type assertion
+    const input = contentRef.current as HTMLElement | null;
     if (!input) {
       setError("Content not available for PDF conversion.");
       return;

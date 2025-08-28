@@ -1,19 +1,46 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
-import domtoimage from 'dom-to-image';
+import { useState, useRef, useCallback, useEffect } from 'react';
+
+// Ghadi nkhdem had l'bibliothèques mn window bach ykono moujoudin
+declare const html2canvas: any;
+declare const jsPDF: any;
+declare const domtoimage: any;
 
 const App = () => {
-  const [emlFile, setEmlFile] = useState(null);
-  const [parsedEmail, setParsedEmail] = useState(null);
+  const [emlFile, setEmlFile] = useState<File | null>(null);
+  const [parsedEmail, setParsedEmail] = useState<any>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const contentRef = useRef(null);
 
-  const handleFileChange = (event) => {
-    const file = event.target.files[0];
+  // Kanzidou wa7ed useEffect bach ytechargiw les scripts dial l'bibliothèques
+  useEffect(() => {
+    const scriptHtml2canvas = document.createElement('script');
+    scriptHtml2canvas.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+    scriptHtml2canvas.async = true;
+    document.body.appendChild(scriptHtml2canvas);
+
+    const scriptJsPDF = document.createElement('script');
+    scriptJsPDF.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+    scriptJsPDF.async = true;
+    document.body.appendChild(scriptJsPDF);
+
+    const scriptDomToImage = document.createElement('script');
+    scriptDomToImage.src = 'https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js';
+    scriptDomToImage.async = true;
+    document.body.appendChild(scriptDomToImage);
+
+    return () => {
+      // Kan7aydou les scripts ila l'component t7ayed
+      document.body.removeChild(scriptHtml2canvas);
+      document.body.removeChild(scriptJsPDF);
+      document.body.removeChild(scriptDomToImage);
+    };
+  }, []); // [] bach ykhedem gha mra wa7da
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
     if (file) {
       setEmlFile(file);
       setParsedEmail(null);
@@ -53,10 +80,9 @@ const App = () => {
     }
   }, [emlFile]);
 
-  const sanitizeHtml = (htmlString) => {
+  const sanitizeHtml = (htmlString: string) => {
     if (!htmlString) return '';
     const doc = new DOMParser().parseFromString(htmlString, 'text/html');
-    // Check if the element is an HTMLElement before accessing its style.
     doc.querySelectorAll('[style]').forEach(el => {
       if (el instanceof HTMLElement) {
         if (el.style.length > 0) {
@@ -68,6 +94,10 @@ const App = () => {
   };
 
   const handlePrint = useCallback(() => {
+    if (typeof jsPDF === 'undefined' || typeof html2canvas === 'undefined' || typeof domtoimage === 'undefined') {
+        setError("Libraries are not loaded yet. Please wait a moment.");
+        return;
+    }
     const input = contentRef.current as HTMLElement | null;
     if (!input) {
       setError("Content not available for PDF conversion.");
@@ -76,7 +106,7 @@ const App = () => {
 
     const tryHtml2canvas = () => {
       html2canvas(input, { scale: 2, useCORS: true, logging: true })
-        .then((canvas) => {
+        .then((canvas: HTMLCanvasElement) => {
           const imgData = canvas.toDataURL('image/png');
           const pdf = new jsPDF('p', 'mm', 'a4', true);
           const imgWidth = 210;
@@ -95,7 +125,7 @@ const App = () => {
           pdf.save('converted-email.pdf');
           setIsLoading(false);
         })
-        .catch((error) => {
+        .catch((error: any) => {
           console.error("html2canvas failed, trying dom-to-image:", error);
           tryDomToImage();
         });
@@ -103,7 +133,7 @@ const App = () => {
 
     const tryDomToImage = () => {
       domtoimage.toPng(input)
-        .then((dataUrl) => {
+        .then((dataUrl: string) => {
           const pdf = new jsPDF('p', 'mm', 'a4', true);
           const imgWidth = 210;
           const pageHeight = 295;
@@ -121,7 +151,7 @@ const App = () => {
           pdf.save('converted-email.pdf');
           setIsLoading(false);
         })
-        .catch((error) => {
+        .catch((error: any) => {
           console.error('dom-to-image also failed:', error);
           setError('Failed to create PDF. The email content may contain unsupported styles.');
           setIsLoading(false);

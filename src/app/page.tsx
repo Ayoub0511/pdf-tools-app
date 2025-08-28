@@ -2,7 +2,7 @@
 'use client';
 
 import ToolCard from './components/ToolCard';
-import { FaFilePdf, FaImage, FaUnlink, FaCompress, FaArrowsAltH, FaEnvelopeOpenText } from 'react-icons/fa';
+import { FaFilePdf, FaUnlink, FaCompress, FaArrowsAltH, FaEnvelopeOpenText } from 'react-icons/fa';
 
 const HomePage = () => {
     return (
@@ -48,14 +48,6 @@ const HomePage = () => {
                     iconColor="text-orange-500"
                     bgColor="bg-orange-50"
                     href="/tools/convert-to-pdf"
-                />
-                <ToolCard
-                    title="Image to PDF"
-                    description="Convert one or more image files to a single PDF document."
-                    icon={FaImage}
-                    iconColor="text-purple-500"
-                    bgColor="bg-purple-50"
-                    href="/tools/convert-image-to-pdf"
                 />
                 <ToolCard
                     title="EML to PDF"

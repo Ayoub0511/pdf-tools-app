@@ -9,7 +9,7 @@ const App = () => {
   const [emlFile, setEmlFile] = useState(null);
   const [parsedEmail, setParsedEmail] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null); // Type of 'error' is now string or null
+  const [error, setError] = useState<string | null>(null); // Had l'ligne hiya li mbedla
   const contentRef = useRef(null);
 
   const handleFileChange = (event) => {

@@ -9,7 +9,7 @@ const App = () => {
   const [emlFile, setEmlFile] = useState(null);
   const [parsedEmail, setParsedEmail] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null); // Had l'ligne hiya li mbedla
+  const [error, setError] = useState<string | null>(null);
   const contentRef = useRef(null);
 
   const handleFileChange = (event) => {
@@ -56,9 +56,12 @@ const App = () => {
   const sanitizeHtml = (htmlString) => {
     if (!htmlString) return '';
     const doc = new DOMParser().parseFromString(htmlString, 'text/html');
+    // We cast `el` to HTMLElement to safely access the `style` property.
+    // This is necessary because querySelectorAll returns a generic Element type.
     doc.querySelectorAll('[style]').forEach(el => {
-      if (el.style.length > 0) {
-        el.style.cssText = el.style.cssText.replace(/oklch\([^)]*\)/g, 'rgb(0,0,0)');
+      const htmlEl = el as HTMLElement; // Casting here
+      if (htmlEl.style.length > 0) {
+        htmlEl.style.cssText = htmlEl.style.cssText.replace(/oklch\([^)]*\)/g, 'rgb(0,0,0)');
       }
     });
     return doc.body.innerHTML;

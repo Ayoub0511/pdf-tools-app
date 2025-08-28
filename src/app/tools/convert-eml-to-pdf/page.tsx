@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 
-// Ghadi nkhdem had l'bibliothèques mn window bach ykono moujoudin
+// Kan7ellou l'error b had l'declaration
 declare const html2canvas: any;
 declare const jsPDF: any;
 declare const domtoimage: any;
@@ -12,22 +12,41 @@ const App = () => {
   const [parsedEmail, setParsedEmail] = useState<any>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  // Zidna wa7d l'state jdida bach n2akdou beli l'bibliothèques tcharjaw
+  const [isLibrariesLoaded, setIsLibrariesLoaded] = useState<boolean>(false);
   const contentRef = useRef(null);
 
-  // Kanzidou wa7ed useEffect bach ytechargiw les scripts dial l'bibliothèques
   useEffect(() => {
     const scriptHtml2canvas = document.createElement('script');
     scriptHtml2canvas.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+    scriptHtml2canvas.onload = () => {
+      // Kanstna hta ytechargiw kolhom
+      if (typeof jsPDF !== 'undefined' && typeof domtoimage !== 'undefined') {
+        setIsLibrariesLoaded(true);
+      }
+    };
     scriptHtml2canvas.async = true;
     document.body.appendChild(scriptHtml2canvas);
 
     const scriptJsPDF = document.createElement('script');
     scriptJsPDF.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+    scriptJsPDF.onload = () => {
+      // Kanstna hta ytechargiw kolhom
+      if (typeof html2canvas !== 'undefined' && typeof domtoimage !== 'undefined') {
+        setIsLibrariesLoaded(true);
+      }
+    };
     scriptJsPDF.async = true;
     document.body.appendChild(scriptJsPDF);
 
     const scriptDomToImage = document.createElement('script');
     scriptDomToImage.src = 'https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js';
+    scriptDomToImage.onload = () => {
+      // Kanstna hta ytechargiw kolhom
+      if (typeof html2canvas !== 'undefined' && typeof jsPDF !== 'undefined') {
+        setIsLibrariesLoaded(true);
+      }
+    };
     scriptDomToImage.async = true;
     document.body.appendChild(scriptDomToImage);
 
@@ -94,7 +113,7 @@ const App = () => {
   };
 
   const handlePrint = useCallback(() => {
-    if (typeof jsPDF === 'undefined' || typeof html2canvas === 'undefined' || typeof domtoimage === 'undefined') {
+    if (!isLibrariesLoaded) {
         setError("Libraries are not loaded yet. Please wait a moment.");
         return;
     }
@@ -161,7 +180,7 @@ const App = () => {
     setIsLoading(true);
     setError(null);
     tryHtml2canvas();
-  }, [contentRef]);
+  }, [contentRef, isLibrariesLoaded]);
 
   return (
     <div className="min-h-screen bg-gray-100 p-8 flex flex-col items-center">
@@ -233,7 +252,8 @@ const App = () => {
           
           <button
             onClick={handlePrint}
-            className="mt-6 px-8 py-4 bg-blue-600 text-white font-bold rounded-lg cursor-pointer hover:bg-blue-700 transition-colors duration-300"
+            className="mt-6 px-8 py-4 bg-blue-600 text-white font-bold rounded-lg cursor-pointer hover:bg-blue-700 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={!isLibrariesLoaded}
           >
             Download PDF
           </button>

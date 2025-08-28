@@ -1,62 +1,35 @@
-// src/app/api/convert-eml/route.ts
 import { NextResponse } from 'next/server';
-import * as mailparser from 'mailparser';
-import type { AddressObject } from 'mailparser';
+import simpleParser from 'mailparser';
 
-/**
- * Handles POST requests to convert an EML file to structured JSON data.
- * This function runs only on the server, allowing the use of Node.js-specific modules like `mailparser`.
- * @param request The incoming request containing the EML file.
- * @returns A JSON response with the parsed email data or an error message.
- */
-export async function POST(request: Request) {
+export async function POST(request) {
   try {
-    const formData = await request.formData();
-    const file = formData.get('emlFile');
-
-    if (!file || typeof file === 'string') {
-      console.error('No EML file provided.');
-      return NextResponse.json({ error: 'No EML file provided.' }, { status: 400 });
+    if (!request.headers.get('content-type')?.includes('multipart/form-data')) {
+      return NextResponse.json({ error: 'Invalid content type' }, { status: 400 });
     }
 
-    // Convert the file to a buffer for mailparser
-    const fileBuffer = await (file as Blob).arrayBuffer();
-    const emailBuffer = Buffer.from(fileBuffer);
+    const formData = await request.formData();
+    const emlFile = formData.get('emlFile');
 
-    // Use simpleParser to get the email data
-    const parsedEmail = await mailparser.simpleParser(emailBuffer);
+    if (!emlFile) {
+      return NextResponse.json({ error: 'No EML file provided' }, { status: 400 });
+    }
 
-    // Helper function to handle both single address and array of addresses
-    const getAddressText = (address: string | AddressObject | AddressObject[] | undefined) => {
-      if (!address) {
-        return '';
-      }
-      if (Array.isArray(address)) {
-        return address.map(addr => addr.text).join(', ');
-      }
-      if (typeof address === 'object') {
-        return address.text || '';
-      }
-      return address;
-    };
+    const buffer = Buffer.from(await emlFile.arrayBuffer());
 
-    // We send back only the data needed to create the PDF on the client
+    const parsed = await simpleParser.simpleParser(buffer);
+
     const emailData = {
-      subject: parsedEmail.subject || '',
-      from: getAddressText(parsedEmail.from),
-      to: getAddressText(parsedEmail.to),
-      date: parsedEmail.date?.toISOString() || '',
-      html: parsedEmail.html || '',
-      text: parsedEmail.text || '',
+      from: parsed.from?.text || 'N/A',
+      to: parsed.to?.text || 'N/A',
+      subject: parsed.subject || 'N/A',
+      date: parsed.date ? parsed.date.toISOString() : 'N/A',
+      html: parsed.html || null,
+      text: parsed.text || null,
     };
-    
-    console.log('Successfully parsed EML file:', emailData.subject);
 
-    return NextResponse.json(emailData, { status: 200 });
-
+    return NextResponse.json(emailData);
   } catch (error) {
-    console.error('Error processing EML file:', error);
-    // Return a more descriptive error message to the client
-    return NextResponse.json({ error: 'Failed to process EML file. Please ensure the file is a valid .eml file.' }, { status: 500 });
+    console.error('Error parsing EML file:', error);
+    return NextResponse.json({ error: 'Failed to parse EML file.' }, { status: 500 });
   }
 }

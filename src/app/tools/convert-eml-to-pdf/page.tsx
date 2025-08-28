@@ -8,7 +8,7 @@ import domtoimage from 'dom-to-image';
 const App = () => {
   const [emlFile, setEmlFile] = useState(null);
   const [parsedEmail, setParsedEmail] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const contentRef = useRef(null);
 
@@ -56,10 +56,8 @@ const App = () => {
   const sanitizeHtml = (htmlString) => {
     if (!htmlString) return '';
     const doc = new DOMParser().parseFromString(htmlString, 'text/html');
-    // We cast `el` to HTMLElement to safely access the `style` property.
-    // This is necessary because querySelectorAll returns a generic Element type.
     doc.querySelectorAll('[style]').forEach(el => {
-      const htmlEl = el as HTMLElement; // Casting here
+      const htmlEl = el as HTMLElement;
       if (htmlEl.style.length > 0) {
         htmlEl.style.cssText = htmlEl.style.cssText.replace(/oklch\([^)]*\)/g, 'rgb(0,0,0)');
       }
@@ -68,7 +66,7 @@ const App = () => {
   };
 
   const handlePrint = useCallback(() => {
-    const input = contentRef.current;
+    const input = contentRef.current as HTMLElement | null; // This is the new type assertion
     if (!input) {
       setError("Content not available for PDF conversion.");
       return;

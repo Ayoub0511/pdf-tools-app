@@ -1,14 +1,15 @@
 'use client';
 
 import { useState, useRef, useCallback } from 'react';
-import domtoimage from 'dom-to-image';
+import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import domtoimage from 'dom-to-image';
 
 const App = () => {
   const [emlFile, setEmlFile] = useState(null);
   const [parsedEmail, setParsedEmail] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState(null); // Type of 'error' is now string or null
   const contentRef = useRef(null);
 
   const handleFileChange = (event) => {
@@ -52,36 +53,82 @@ const App = () => {
     }
   }, [emlFile]);
 
-  const handlePrint = () => {
+  const sanitizeHtml = (htmlString) => {
+    if (!htmlString) return '';
+    const doc = new DOMParser().parseFromString(htmlString, 'text/html');
+    doc.querySelectorAll('[style]').forEach(el => {
+      if (el.style.length > 0) {
+        el.style.cssText = el.style.cssText.replace(/oklch\([^)]*\)/g, 'rgb(0,0,0)');
+      }
+    });
+    return doc.body.innerHTML;
+  };
+
+  const handlePrint = useCallback(() => {
     const input = contentRef.current;
-    if (input) {
+    if (!input) {
+      setError("Content not available for PDF conversion.");
+      return;
+    }
+
+    const tryHtml2canvas = () => {
+      html2canvas(input, { scale: 2, useCORS: true, logging: true })
+        .then((canvas) => {
+          const imgData = canvas.toDataURL('image/png');
+          const pdf = new jsPDF('p', 'mm', 'a4', true);
+          const imgWidth = 210;
+          const pageHeight = 295;
+          const imgHeight = (canvas.height * imgWidth) / canvas.width;
+          let heightLeft = imgHeight;
+          let position = 0;
+          pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+          heightLeft -= pageHeight;
+          while (heightLeft >= 0) {
+            position = heightLeft - imgHeight;
+            pdf.addPage();
+            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+            heightLeft -= pageHeight;
+          }
+          pdf.save('converted-email.pdf');
+          setIsLoading(false);
+        })
+        .catch((error) => {
+          console.error("html2canvas failed, trying dom-to-image:", error);
+          tryDomToImage();
+        });
+    };
+
+    const tryDomToImage = () => {
       domtoimage.toPng(input)
-        .then(function (dataUrl) {
+        .then((dataUrl) => {
           const pdf = new jsPDF('p', 'mm', 'a4', true);
           const imgWidth = 210;
           const pageHeight = 295;
           const imgHeight = (input.clientHeight * imgWidth) / input.clientWidth;
           let heightLeft = imgHeight;
           let position = 0;
-
           pdf.addImage(dataUrl, 'PNG', 0, position, imgWidth, imgHeight);
           heightLeft -= pageHeight;
-
           while (heightLeft >= 0) {
             position = heightLeft - imgHeight;
             pdf.addPage();
             pdf.addImage(dataUrl, 'PNG', 0, position, imgWidth, imgHeight);
             heightLeft -= pageHeight;
           }
-
           pdf.save('converted-email.pdf');
+          setIsLoading(false);
         })
-        .catch(function (error) {
-          console.error('oops, something went wrong!', error);
+        .catch((error) => {
+          console.error('dom-to-image also failed:', error);
           setError('Failed to create PDF. The email content may contain unsupported styles.');
+          setIsLoading(false);
         });
-    }
-  };
+    };
+
+    setIsLoading(true);
+    setError(null);
+    tryHtml2canvas();
+  }, [contentRef]);
 
   return (
     <div className="min-h-screen bg-gray-100 p-8 flex flex-col items-center">
@@ -145,7 +192,7 @@ const App = () => {
           
           <div className="email-body prose max-w-none">
             {parsedEmail.html ? (
-              <div dangerouslySetInnerHTML={{ __html: parsedEmail.html }} />
+              <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(parsedEmail.html) }} />
             ) : (
               <pre>{parsedEmail.text}</pre>
             )}
